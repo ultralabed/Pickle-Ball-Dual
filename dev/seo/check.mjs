@@ -1,4 +1,5 @@
 // Re-runnable SEO / AEO checker.  node dev/seo/check.mjs [--shots=DIR] [--full] [--base=URL]
+const EXTERNAL_OK = /^https:\/\/(github\.com|www\.linkedin\.com)\//; // repo + author credit links
 //  - serves the repo under the sub-path of the canonical base URL (default /Pickle-Ball-Dual/), like GitHub Pages does
 //    (missing files -> 404.html with status 404), and maps every absolute canonical/hreflang/sitemap URL onto that server
 //  - loads every public page in Chromium: HTTP 200, zero console errors/warnings, every local link/asset exists,
@@ -218,9 +219,9 @@ async function checkPage(e, { game }) {
     if (raw.startsWith('#')) { if (raw.length > 1 && !d.ids.includes(raw.slice(1))) anchorBad.push(raw); continue; }
     if (raw.startsWith('/')) hygiene.push(`root-relative ${raw}`);
     if (/localhost|127\.0\.0\.1/.test(raw)) hygiene.push(`local url ${raw}`);
-    if (/^https?:/i.test(raw) && !isMeta && !raw.startsWith('https://github.com/')) hygiene.push(`absolute ${raw}`);
-    if (/^https?:/i.test(raw) && !raw.startsWith(BASE) && !raw.startsWith(LOCAL) && !raw.startsWith('https://github.com/')) hygiene.push(`foreign ${raw}`);
-    if (raw.startsWith('https://github.com/')) continue;
+    if (/^https?:/i.test(raw) && !isMeta && !EXTERNAL_OK.test(raw)) hygiene.push(`absolute ${raw}`);
+    if (/^https?:/i.test(raw) && !raw.startsWith(BASE) && !raw.startsWith(LOCAL) && !EXTERNAL_OK.test(raw)) hygiene.push(`foreign ${raw}`);
+    if (EXTERNAL_OK.test(raw)) continue;
     const u = toLocal(r.abs.split('#')[0]);
     if (checked.has(u)) continue; checked.add(u);
     const res = await apiCtx.request.get(u, { maxRedirects: 0 });

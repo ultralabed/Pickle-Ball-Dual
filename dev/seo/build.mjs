@@ -68,7 +68,7 @@ function socialTags({ title, description, url, locale, altLocale }) {
 <meta name="twitter:image:alt" content="${esc(SITE.ogImageAlt)}">`;
 }
 const ROBOTS_META = '<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">';
-const AUTHOR = { '@type': 'Organization', name: SITE.author.name, url: SITE.author.url };
+const AUTHOR = { '@type': 'Person', name: SITE.author.name, url: SITE.author.url, sameAs: [SITE.author.url, SITE.author.github] };
 
 // ----------------------------------------------------------------------------------------------- guide pages
 function fill(html, lang, fromDir) {

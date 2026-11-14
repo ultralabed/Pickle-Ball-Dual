@@ -20,7 +20,7 @@ export const zh = {
     toc: '本頁目錄', crumbs: '麵包屑導覽', related: '更多指南', sr: '螢幕閱讀器',
     ctaTitle: '準備好開球了嗎？',
     ctaText: 'Pickle Ball Dual 直接在瀏覽器裡玩，免下載、免註冊。選好單打或雙打、挑一個對手強度，就可以發球。',
-    footer: 'Pickle Ball Dual 是一款可在瀏覽器免費遊玩的 3D 匹克球遊戲，由 <a href="https://github.com/ultralabed">ultralabed</a> 製作，與 USA Pickleball、DUPR 沒有任何隸屬關係。',
+    footer: 'Pickle Ball Dual 是一款可在瀏覽器免費遊玩的 3D 匹克球遊戲，由 <a href="https://www.linkedin.com/in/edward-shih-43942786" rel="author">Edward Shih</a> 製作，以 MIT 授權釋出，與 USA Pickleball、DUPR 沒有任何隸屬關係。',
     footerPlay: '開始遊戲', footerSource: 'GitHub 原始碼',
     homeName: 'Pickle Ball Dual',
   },

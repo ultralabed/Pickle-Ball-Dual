@@ -7,8 +7,8 @@
     "test": "node --test tests/"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Edward Shih (https://www.linkedin.com/in/edward-shih-43942786)",
+  "license": "MIT",
   "dependencies": {
     "three": "^0.170.0"
   },

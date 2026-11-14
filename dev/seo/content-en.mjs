@@ -20,7 +20,7 @@ export const en = {
     toc: 'On this page', crumbs: 'Breadcrumb', related: 'More guides', sr: 'Screen readers',
     ctaTitle: 'Ready to play?',
     ctaText: 'Pickle Ball Dual is free in your browser: no download, no sign-up. Pick singles or doubles, choose an opponent level and serve.',
-    footer: 'Pickle Ball Dual is a free 3D pickleball game for your browser, made by <a href="https://github.com/ultralabed">ultralabed</a>. It is not affiliated with USA Pickleball or DUPR.',
+    footer: 'Pickle Ball Dual is a free 3D pickleball game for your browser, made by <a href="https://www.linkedin.com/in/edward-shih-43942786" rel="author">Edward Shih</a> and released under the MIT License. It is not affiliated with USA Pickleball or DUPR.',
     footerPlay: 'Play the game', footerSource: 'Source on GitHub',
     homeName: 'Pickle Ball Dual',
   },
@@ -295,7 +295,7 @@ ${ringTable}
       'Controls: WASD or arrow keys to move, A/D to aim, Esc to pause, M mute, H hide key hints, R skip replay. Keyboard only; no touch controls.',
       'Extras: slow-motion instant replays of highlight points, English referee score calls, English and Traditional Chinese interface, Low/Medium/High graphics.',
       'Court facts used in the game: 20 x 44 ft (6.10 x 13.41 m); net 36 in (0.914 m) at the posts, 34 in (0.864 m) at the centre.',
-      'Built with plain ES modules and three.js; no build step. Made by ultralabed.',
+      'Built with plain ES modules and three.js; no build step. Made by Edward Shih (https://www.linkedin.com/in/edward-shih-43942786). MIT License.',
     ],
   },
 

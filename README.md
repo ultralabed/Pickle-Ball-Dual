@@ -78,3 +78,9 @@ node dev/seo/make-images.mjs [icons|og|all]             # regenerate og-image.pn
 The canonical base URL is defined in one place: `BASE_URL` in `dev/seo/site.mjs` (the `--base` flag overrides it). To move to a custom domain: change `BASE_URL` (and the `--base` default of `dev/seo/check.mjs` follows it), add a `CNAME` file, rebuild, and run the checker. Absolute URLs only appear in generated canonical / hreflang / Open Graph / JSON-LD / sitemap / robots / llms.txt / 404.html output; everything else stays relative. Edit the copy in `dev/seo/content-en.mjs` and `dev/seo/content-zh.mjs` (guide pages) and the `meta.*` strings in `src/ui/i18n.js` (the home page tags that follow the UI language; keep the English ones equal to `HOME_EN` in `dev/seo/site.mjs`).
 
 Note: crawlers only read `robots.txt` at the host root; on a project sub-path rely on the sitemap and meta robots tags, or serve the site from a custom domain.
+
+## License and credit
+
+[MIT](LICENSE) © 2026 [Edward Shih](https://www.linkedin.com/in/edward-shih-43942786). You may use, copy, modify and redistribute this project, including commercially, as long as the copyright notice and license text stay with it. A link back to this repository or to [Edward's LinkedIn](https://www.linkedin.com/in/edward-shih-43942786) is appreciated.
+
+three.js (vendored in `vendor/`) is © Three.js Authors, also MIT.

@@ -7,7 +7,7 @@ export const SITE = {
   name: 'Pickle Ball Dual',
   lastmod: '2026-11-14',
   themeColor: '#0b1a2c',
-  author: { name: 'ultralabed', url: 'https://github.com/ultralabed' },
+  author: { name: 'Edward Shih', url: 'https://www.linkedin.com/in/edward-shih-43942786', github: 'https://github.com/ultralabed' },
   repo: 'https://github.com/ultralabed/pickle-ball-dual',
   ogImage: 'og-image.png',
   ogImageAlt: 'Pickle Ball Dual: a 3D pickleball rally in the browser',

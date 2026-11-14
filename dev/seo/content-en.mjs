@@ -30,12 +30,12 @@ export const en = {
       title: 'How to Play Pickle Ball Dual: Controls, Shots, Timing',
       description: 'Pickle Ball Dual controls and tips: WASD to move, Space/J/K/L for drive, drop, dink and lob, the foot-ring timing colours and DUPR 3.0–6.0 levels.',
       h1: 'How to Play Pickle Ball Dual: Controls, Shots and Timing',
-      lede: 'Pickle Ball Dual is played with the keyboard: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move, <kbd>Space</kbd> to drive, and <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> for the drop, dink and lob. This guide covers every control, every shot, the foot-ring timing colours, the game modes and the four DUPR difficulty levels.',
+      lede: 'Pickle Ball Dual is played with the keyboard on a computer (<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move, <kbd>Space</kbd> to drive, and <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> for the drop, dink and lob) or with on-screen touch controls on a phone or tablet. This guide covers every control, every shot, the foot-ring timing colours, the game modes and the four DUPR difficulty levels.',
       howto: {
         name: 'How to play Pickle Ball Dual',
         description: 'Start and win your first match of Pickle Ball Dual, the free 3D pickleball game in your browser.',
         steps: [
-          ['Open the game and press Play', 'Open Pickle Ball Dual in a desktop browser such as Chrome or Safari and press Play on the main menu.'],
+          ['Open the game and press Play', 'Open Pickle Ball Dual in a modern browser such as Chrome or Safari, on a computer, phone or tablet, and press Play on the main menu.'],
           ['Choose mode and scoring', 'Pick Doubles (you and an AI partner against two AI opponents) or Singles, then Traditional scoring (to 11) or Rally scoring (to 15).'],
           ['Choose the opponent level', 'Pick the opponent DUPR level from 3.0 to 6.0 (and your partner\'s level in doubles), choose your paddle hand and graphics quality, then press Start match.'],
           ['Serve', 'When it is your serve, press Space for a fast deep serve (J or K for a soft serve, L for a lob serve). Hold A or D as you serve to aim left or right.'],
@@ -47,7 +47,7 @@ export const en = {
 <h2 id="start">How do I start a match?</h2>
 <p>Open the game, press <b>Play</b>, choose Doubles or Singles, a scoring system and the opponents' DUPR level (3.0, 4.0, 5.0 or 6.0), then press <b>Start match</b>. It runs in your browser, with no download and no sign-up.</p>
 <ol class="steps">
-<li><b>Open the game and press Play</b> in a desktop browser such as Chrome or Safari.</li>
+<li><b>Open the game and press Play</b> in a modern browser such as Chrome or Safari, on a computer, phone or tablet.</li>
 <li><b>Choose mode and scoring:</b> Doubles (you and an AI partner against two AI opponents) or Singles, then Traditional scoring (to 11) or Rally scoring (to 15).</li>
 <li><b>Choose the opponent level:</b> DUPR 3.0, 4.0, 5.0 or 6.0 (plus your partner's level in doubles), your paddle hand and graphics quality, then press Start match.</li>
 <li><b>Serve:</b> press <kbd>Space</kbd> for a fast deep serve (<kbd>J</kbd> or <kbd>K</kbd> for a soft serve, <kbd>L</kbd> for a lob serve). Hold <kbd>A</kbd> or <kbd>D</kbd> as you serve to aim left or right.</li>
@@ -56,7 +56,7 @@ export const en = {
 </ol>
 
 <h2 id="controls">What are the controls in Pickle Ball Dual?</h2>
-<p>Move with <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> (or the arrow keys), hit with <kbd>Space</kbd> (drive), <kbd>J</kbd> (drop), <kbd>K</kbd> (dink) and <kbd>L</kbd> (lob), and hold <kbd>A</kbd>/<kbd>D</kbd> (or <kbd>←</kbd>/<kbd>→</kbd>) as you hit to aim left or right. The mouse is used for the menus.</p>
+<p>Move with <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> (or the arrow keys), hit with <kbd>Space</kbd> (drive), <kbd>J</kbd> (drop), <kbd>K</kbd> (dink) and <kbd>L</kbd> (lob), and hold <kbd>A</kbd>/<kbd>D</kbd> (or <kbd>←</kbd>/<kbd>→</kbd>) as you hit to aim left or right. The mouse is used for the menus. On a phone or tablet use the <a href="#touch">touch controls</a> instead.</p>
 <div class="tablewrap"><table>
 <caption class="sr">Keyboard controls</caption>
 <thead><tr><th scope="col">Action</th><th scope="col">Keys</th><th scope="col">What it does</th></tr></thead>
@@ -71,6 +71,23 @@ export const en = {
 <tr><th scope="row">Pause</th><td><kbd>Esc</kbd></td><td>Pause or resume. The game also pauses by itself when you switch to another tab or window.</td></tr>
 <tr><th scope="row">Other</th><td><kbd>M</kbd> <kbd>H</kbd> <kbd>R</kbd></td><td>M mutes sound, H hides the key hints, R (or a click) skips an instant replay.</td></tr>
 </tbody></table></div>
+
+<h2 id="touch">How do I play on a phone or tablet?</h2>
+<p>On a phone or tablet the game shows touch controls automatically: a floating joystick under your left thumb to move, and four coloured buttons under your right thumb for the shots. A keyboard is not needed. If you attach a keyboard, the touch controls hide and the keys work as described above.</p>
+<div class="tablewrap"><table>
+<caption class="sr">Touch controls</caption>
+<thead><tr><th scope="col">Action</th><th scope="col">Touch control</th><th scope="col">What it does</th></tr></thead>
+<tbody>
+<tr><th scope="row">Move</th><td>Drag anywhere on the left side of the screen</td><td>A joystick appears under your thumb. Push up to run toward the net, down to go back, left or right to sidestep. A bigger push is faster.</td></tr>
+<tr><th scope="row">Drive</th><td>Big pink <b>Drive</b> button</td><td>Tap for a quick drive; hold to charge power (the ring around the button fills in about 0.7 s) and release to hit. A high ball automatically becomes a smash.</td></tr>
+<tr><th scope="row">Drop</th><td>Green <b>Drop</b> button</td><td>A soft arc that lands in the opponent's kitchen.</td></tr>
+<tr><th scope="row">Dink</th><td>Purple <b>Dink</b> button</td><td>A soft shot into the kitchen; works best from near the net.</td></tr>
+<tr><th scope="row">Lob</th><td>Blue <b>Lob</b> button</td><td>A high arc that pushes the opponents back to the baseline.</td></tr>
+<tr><th scope="row">Aim</th><td>Keep the joystick pushed left or right as you hit</td><td>Push it past the arrow marker to aim left or right; leave it centred for a safe shot down the middle.</td></tr>
+<tr><th scope="row">Serve</th><td>Any shot button</td><td>On your serve tap Drive for a fast deep serve, Lob for a lob serve, or Drop or Dink for a soft serve.</td></tr>
+<tr><th scope="row">Pause and more</th><td>Buttons at the top right</td><td>Pause, sound and full screen (where the browser allows it). Tap anywhere on the screen to skip an instant replay.</td></tr>
+</tbody></table></div>
+<p>Both landscape and portrait work; landscape gives a wider view. The ring under your feet turns green on the buttons too, so tap a shot button when you see green. The game uses the Low graphics setting by default on phones and Medium on tablets to keep the frame rate smooth, and it keeps the screen awake while you play. Add the page to your home screen for a full-screen game.</p>
 
 <h2 id="shots">What shots can I hit, and when should I use each?</h2>
 <p>You have four button shots (drive, drop, dink and lob) and two the game triggers for you, the smash and the around-the-post shot (ATP). Use soft shots to take control at the net and hard shots to finish a point.</p>
@@ -244,7 +261,7 @@ ${ringTable}
 <p>In traditional scoring a game is played to 11 points and must be won by 2, so 11-9 wins but 11-10 does not and play continues. In Pickle Ball Dual rally scoring is played to 15, also win by 2. Real tournaments sometimes use 15 or 21 points.</p>
 
 <h2 id="simplified">Which official rules does Pickle Ball Dual simplify?</h2>
-<p>The game follows the core rules but simplifies a few details to suit a keyboard game against the AI. If you are learning for real play, remember these differences.</p>
+<p>The game follows the core rules but simplifies a few details to suit a quick game against the AI. If you are learning for real play, remember these differences.</p>
 <ul>
 <li><b>Kitchen momentum:</b> the real rule is about momentum carrying you into the kitchen after a volley; the game uses a 0.6 s window.</li>
 <li><b>Not modelled:</b> end changes, time-outs, touching the net, double hits and the paddle position on a serve.</li>
@@ -257,16 +274,17 @@ ${ringTable}
 
     faq: {
       name: 'FAQ',
-      title: 'Pickle Ball Dual FAQ: Free Play, Mac, Rules, DUPR',
-      description: 'Answers about Pickle Ball Dual: is it free, how to play on a Mac, the two-bounce rule, 0-0-2, dinks, ATP shots, the kitchen, DUPR levels and scoring.',
+      title: 'Pickle Ball Dual FAQ: Free, Phone, Mac, Rules, DUPR',
+      description: 'Answers about Pickle Ball Dual: is it free, play on a phone or Mac, the two-bounce rule, 0-0-2, dinks, ATP shots, the kitchen, DUPR levels and scoring.',
       h1: 'Pickle Ball Dual FAQ',
       lede: 'Quick answers about the free 3D pickleball game and about pickleball itself. Each answer stands on its own; follow the links for the full guides.',
       faq: [
         ['What is Pickle Ball Dual?', 'Pickle Ball Dual is a free 3D pickleball game that runs in your web browser. You play singles or doubles against computer-controlled opponents at DUPR levels 3.0 to 6.0, using the real rules of pickleball, with no download and no sign-up.'],
         ['Can I play pickleball online for free?', 'Yes. Pickle Ball Dual is free to play online in your browser: open the page, press Play and start a match, with no download, account or payment. You play against AI opponents, because there is no online multiplayer.'],
-        ['Does Pickle Ball Dual need a download, plug-in or account?', 'No. It runs as a web page and needs only a recent desktop browser with WebGL and a keyboard. Your settings and last match setup are saved in your own browser, not on a server.'],
+        ['Does Pickle Ball Dual need a download, plug-in or account?', 'No. It runs as a web page and needs only a recent browser with WebGL: a keyboard on a computer, or the on-screen touch controls on a phone or tablet. Your settings and last match setup are saved in your own browser, not on a server.'],
         ['How do I play on a Mac?', 'Open Pickle Ball Dual in Safari or Chrome on your Mac, press Play and use the keyboard: W, A, S, D to move, Space to drive, and J, K and L for the drop, dink and lob. If the court does not appear, turn on hardware acceleration in your browser, and choose Low graphics on an older Mac.'],
-        ['Which browsers and devices does it work on?', 'Pickle Ball Dual is built for desktop browsers such as recent Chrome and Safari, with WebGL and a keyboard. It has no touch controls, so it is not playable on a phone or tablet without a keyboard.'],
+        ['Can I play Pickle Ball Dual on my phone or tablet?', 'Yes. Open the page in Safari on an iPhone or iPad or in Chrome on an Android phone or tablet and press Play. The game shows a touch joystick for moving and four buttons (Drive, Drop, Dink and Lob) for the shots, and works in landscape and portrait. Landscape gives the best view, and phones use the Low graphics setting by default to keep it smooth.'],
+        ['Which browsers and devices does it work on?', 'Pickle Ball Dual works in recent Chrome, Safari, Edge and Firefox with WebGL: on desktop with a keyboard, and on iPhone, iPad and Android phones and tablets with touch controls. A very old phone may run best on the Low graphics setting.'],
         ['Can I play with friends or against other people online?', 'No. Pickle Ball Dual is single-player: in doubles you and an AI partner face two AI opponents, and in singles you face one. It has no online multiplayer and no accounts.'],
         ['What is the two-bounce rule in pickleball?', 'The two-bounce rule says the serve must bounce on the receiving side and the return must bounce on the serving side before anyone may volley. After those two bounces, players can hit the ball out of the air, except in the kitchen.'],
         ['What does 0-0-2 mean in pickleball?', '0-0-2 is the opening score call in doubles: the serving side has 0, the receiving side has 0, and the server is server number 2. The first serving side gets only one server in its first turn, so it begins as server 2 and loses the serve after its first lost rally.'],
@@ -286,13 +304,13 @@ ${ringTable}
 
   // llms.txt copy
   llms: {
-    summary: 'Pickle Ball Dual is a free 3D pickleball game that runs in a desktop web browser. You play singles or doubles against AI opponents at DUPR levels 3.0, 4.0, 5.0 and 6.0, with real pickleball rules. No install, no sign-up, no online multiplayer.',
+    summary: 'Pickle Ball Dual is a free 3D pickleball game that runs in a web browser on desktop (keyboard) and on phones and tablets (touch controls). You play singles or doubles against AI opponents at DUPR levels 3.0, 4.0, 5.0 and 6.0, with real pickleball rules. No install, no sign-up, no online multiplayer.',
     facts: [
       'Modes: doubles (you plus an AI partner vs two AI opponents) or singles (you vs one AI).',
       'Scoring: traditional side-out scoring to 11 (win by 2, doubles start at 0-0-2, server 1 and server 2) or rally scoring to 15 (win by 2).',
       'Rules implemented: diagonal serve, two-bounce rule, kitchen (non-volley zone, 7 ft / 2.13 m), faults, line calls (lines are in), around-the-post (ATP) shots.',
       'Shots: drive (Space), drop (J), dink (K), lob (L), automatic smash on high balls, automatic ATP when pulled wide near the net.',
-      'Controls: WASD or arrow keys to move, A/D to aim, Esc to pause, M mute, H hide key hints, R skip replay. Keyboard only; no touch controls.',
+      'Controls: WASD or arrow keys to move, A/D to aim, Esc to pause, M mute, H hide key hints, R skip replay. Touch controls on phones and tablets: floating joystick to move, Drive / Drop / Dink / Lob buttons, push the stick left or right to aim; landscape and portrait both work.',
       'Extras: slow-motion instant replays of highlight points, English referee score calls, English and Traditional Chinese interface, Low/Medium/High graphics.',
       'Court facts used in the game: 20 x 44 ft (6.10 x 13.41 m); net 36 in (0.914 m) at the posts, 34 in (0.864 m) at the centre.',
       'Built with plain ES modules and three.js; no build step. Made by Edward Shih (https://www.linkedin.com/in/edward-shih-43942786). MIT License.',

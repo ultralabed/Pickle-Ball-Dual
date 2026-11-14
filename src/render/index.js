@@ -7,28 +7,33 @@ import { evalAnim, applyLegCycle, warpSwingTime, NCH, ANIM_DURATION, C } from '.
 const C_hipsDY = C.hipsDY, C_rootY = C.rootY;
 import { clamp, damp, lerp, smoothstep, angleDiff } from './util.js';
 
+// low = genuinely cheap (phones): 512 px shadow map with plain PCF, ~15 % of the crowd (animated at a lower rate), small particle pool,
+// pixel ratio 1 and (decided at context creation, see opts.antialias) no multisampling.
 const QUALITY = {
-  high: { shadow: 2048, pr: 1.5, crowd: 'high' },
-  medium: { shadow: 1024, pr: 1.25, crowd: 'medium' },
-  low: { shadow: 512, pr: 1, crowd: 'low' },
+  high: { shadow: 2048, pr: 1.5, crowd: 'high', shadowType: THREE.PCFSoftShadowMap },
+  medium: { shadow: 1024, pr: 1.25, crowd: 'medium', shadowType: THREE.PCFSoftShadowMap },
+  low: { shadow: 512, pr: 1, crowd: 'low', shadowType: THREE.PCFShadowMap },
 };
 const FAULT_TEXT = { out: 'OUT!', net: 'NET!', doubleBounce: '2 BOUNCES!', kitchen: 'KITCHEN!', twoBounceRule: 'TWO-BOUNCE!', serveShort: 'SHORT!', serveWrongCourt: 'WRONG COURT!', bodyHit: 'BODY HIT!' };
 const SWING_LEG_MIX = { drive: 0.4, drop: 0.35, dink: 0.3, lob: 0.35, volley: 0.45, smash: 0.12, serve: 0.15, serveReady: 0.3, celebrate: 0.1, dejected: 0.25, ready: 1, run: 1, idle: 1 };
 
+const PORTRAIT = { up: 4.2, back: 8.5, aim: 2.2, hTan: 0.27 };   // play-camera offsets at full portrait (aspect <= 0.5)
+
 export function createView(canvas, opts = {}) {
   let quality = QUALITY[opts.quality] ? opts.quality : 'high';
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: !!opts.preserveDrawingBuffer });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: opts.antialias !== false, powerPreference: 'high-performance', preserveDrawingBuffer: !!opts.preserveDrawingBuffer });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = QUALITY[quality].shadowType;
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog('#d9e9f6', 60, 190);
   const camera = new THREE.PerspectiveCamera(40, 16 / 10, 0.1, 600);
 
   const court = buildCourt(scene, QUALITY[quality].crowd);
+  court.setLowPower(quality === 'low');
   const fx = createEffects(scene, quality);
   court.sun.shadow.mapSize.set(QUALITY[quality].shadow, QUALITY[quality].shadow);
 
@@ -134,11 +139,18 @@ export function createView(canvas, opts = {}) {
   }
 
   // ------------------------------------------------------------ cameras
-  function fovFor(base) {
-    const aspect = camera.aspect;
-    const ref = 1.6;
+  // Portrait / narrow screens: `pp` (0 = landscape or desktop, 1 = tall phone) pulls the cameras back and up and lets the horizontal
+  // field of view shrink, so the whole court width (and the human) stays in frame without a 100-degree vertical FOV.
+  function portraitAmount() {
+    const a = camera.aspect, k = clamp((1.5 - a) / (1.5 - 0.5), 0, 1);
+    return k * k * (3 - 2 * k);
+  }
+  function fovFor(base, pp = 0, hTanPortrait = 0.27) {
+    const aspect = camera.aspect, ref = 1.6;
     if (aspect >= ref) return base;
-    return THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(base) / 2) * (ref / aspect)));
+    const t0 = Math.tan(THREE.MathUtils.degToRad(base) / 2);
+    const hTan = lerp(t0 * ref, hTanPortrait, pp);        // horizontal half-tangent that must stay visible
+    return THREE.MathUtils.radToDeg(2 * Math.atan(Math.max(t0, hTan / aspect)));
   }
   function computeCamera(st, dt) {
     const ball = st && st.ball && st.ball.visible !== false ? st.ball.pos : null;
@@ -146,15 +158,16 @@ export function createView(canvas, opts = {}) {
     if (st) for (const p of st.players) if (p.controller === 'human') human = p;
     const bx = ball ? ball.x : 0, bz = ball ? ball.z : 0;
     let fov = 40;
+    const pp = portraitAmount();
     if (camMode === 'play') {
       // low, close, behind the human's team (mobile-tennis style); pulls back when the human is deep and
       // moves up when they are at the kitchen so the near baseline + a serving human always stay in frame.
       const hx = human ? human.pos.x : 0, hz = human ? human.pos.z : 5;
       const cx = clamp(hx * 0.3 + bx * 0.08, -1.7, 1.7);
       const dz = clamp((hz - 5) * 0.4, -1.4, 1.3);
-      wantPos.set(cx, 5.0 + clamp((hz - 5) * 0.15, -0.4, 0.4), 13.8 + dz);
-      wantTarget.set(cx * 0.35 + bx * 0.05, 0.2, -0.8 - dz * 0.2 + clamp(bz, -7, 7) * 0.02);
-      fov = fovFor(42);
+      wantPos.set(cx, 5.0 + clamp((hz - 5) * 0.15, -0.4, 0.4) + PORTRAIT.up * pp, 13.8 + dz + PORTRAIT.back * pp);
+      wantTarget.set(cx * 0.35 + bx * 0.05, 0.2, -0.8 - dz * 0.2 + clamp(bz, -7, 7) * 0.02 + PORTRAIT.aim * pp);
+      fov = fovFor(42, pp, PORTRAIT.hTan);
     } else if (camMode === 'replay') {
       const t = clockT;
       const side = replaySide;
@@ -162,12 +175,14 @@ export function createView(canvas, opts = {}) {
       wantTarget.set(bxs * 0.5, 0.9, bzs * 0.85);
       const ang = 0.18 * Math.sin(t * 0.35);
       wantPos.set(side * (7.4 + Math.cos(ang) * 0.5), 2.6 + 0.5 * Math.sin(t * 0.3), bzs * 0.55 + 4.8 * Math.sin(ang) + 1.5);
-      fov = fovFor(46);
+      if (pp > 0) { const k = 1 + 0.7 * pp; wantPos.x *= k; wantPos.z = wantTarget.z + (wantPos.z - wantTarget.z) * k; wantPos.y += 1.5 * pp; }
+      fov = fovFor(46, pp, 0.34);
     } else { // menu
       const a = clockT * 0.11 + 0.6;
       wantPos.set(Math.sin(a) * 15.5, 9.2 + Math.sin(clockT * 0.17) * 0.8, Math.cos(a) * 15.5);
       wantTarget.set(0, 0.6, 0);
-      fov = fovFor(46);
+      if (pp > 0) { wantPos.multiplyScalar(1 + 0.45 * pp); }
+      fov = fovFor(46, pp, 0.3);
     }
     return fov;
   }
@@ -318,7 +333,12 @@ export function createView(canvas, opts = {}) {
     setCameraOverride(o) { camOverride = o; if (!o) camInit = false; },
     setQuality(q) {
       if (!QUALITY[q]) return;
-      quality = q; court.setShadowSize(QUALITY[q].shadow); court.rebuildCrowd(QUALITY[q].crowd); view.resize();
+      quality = q; court.setShadowSize(QUALITY[q].shadow); court.rebuildCrowd(QUALITY[q].crowd); court.setLowPower(q === 'low');
+      if (renderer.shadowMap.type !== QUALITY[q].shadowType) {
+        renderer.shadowMap.type = QUALITY[q].shadowType;
+        scene.traverse((o) => { const m = o.material; if (m) for (const x of [].concat(m)) x.needsUpdate = true; });   // shadow shaders differ per filter
+      }
+      view.resize();
     },
     resize() {
       const w = Math.max(2, canvas.clientWidth || canvas.width), h = Math.max(2, canvas.clientHeight || canvas.height);

@@ -16,6 +16,7 @@ Guides (static pages, readable without JavaScript): [How to play](https://ultral
 - Real rules: diagonal serve, two-bounce rule, kitchen (non-volley zone), faults, lines are in
 - Shots: drive, drop, dink, lob, automatic smash on high balls, automatic around-the-post (ATP)
 - Foot-ring timing colours, slow-motion instant replays, English referee score calls
+- Touch controls for phones and tablets (floating joystick + Drive / Drop / Dink / Lob buttons), landscape and portrait, wake lock, optional full screen
 - English and Traditional Chinese (繁體中文) interface
 - Plain ES modules, three.js vendored, no build step
 
@@ -30,7 +31,18 @@ Guides (static pages, readable without JavaScript): [How to play](https://ultral
 | Serve | any hit key (`Space` fast, `L` lob, `J`/`K` soft) |
 | Pause / Mute / Hide hints / Skip replay | `Esc` / `M` / `H` / `R` |
 
-Keyboard only; there are no touch controls.
+Phones and tablets get on-screen touch controls automatically (landscape and portrait):
+
+| Action | Touch |
+|---|---|
+| Move | Floating joystick: touch and drag anywhere on the left ~45 % of the screen (up = toward the net) |
+| Drive (hold to charge, release to hit) | Big pink **Drive** button; the ring on the button shows the charge |
+| Drop / Dink / Lob | Green **Drop**, purple **Dink**, blue **Lob** buttons (trigger on touch down) |
+| Aim left / right | Keep the joystick pushed left or right (past the arrow) as you hit |
+| Serve | Any shot button (Drive fast, Lob high, Drop / Dink soft) |
+| Pause / sound / full screen / skip replay | Top-right buttons / tap anywhere |
+
+The touch overlay follows the last input type used: it shows when the primary pointer is coarse or after a touch, and hides again as soon as a key or mouse is used (`?controls=touch` / `?controls=keys` pins it). First-run graphics default to Low on phones, Medium on tablets and High on desktop. Add the page to your home screen for a full-screen game (`manifest.webmanifest`, `display: standalone`).
 
 ## Run locally
 
@@ -46,6 +58,7 @@ Any static server works. Every URL in the site is relative, so it also works und
 npm test                         # 58 simulation tests (node --test)
 node dev/playtest/menus.mjs      # Playwright UI playtests (need Playwright + Chromium)
 node dev/playtest/i18n.mjs
+node dev/playtest/touch.mjs [--shots]   # phone / tablet emulation with real multi-touch events (CDP)
 node dev/seo/check.mjs --shots=/tmp/seo-shots   # SEO/AEO checker (add --full to run all of the above too)
 ```
 

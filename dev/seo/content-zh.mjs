@@ -35,7 +35,7 @@ export const zh = {
 <p class="cta-row"><a class="btn" href="{{url:play}}">立即開玩</a></p>
 
 <h2 id="what">Pickle Ball Dual 是什麼遊戲？</h2>
-<p>Pickle Ball Dual 是一款免費的 3D 匹克球網頁遊戲，用鍵盤操作，在桌面版瀏覽器（建議 Chrome 或 Safari）就能玩，對手全部是電腦控制的 AI。</p>
+<p>Pickle Ball Dual 是一款免費的 3D 匹克球網頁遊戲，電腦用鍵盤、手機和平板用螢幕上的觸控按鈕操作，用 Chrome 或 Safari 等瀏覽器就能玩，對手全部是電腦控制的 AI。</p>
 <ul>
 <li><b>單打或雙打：</b>雙打時由 AI 當你的隊友，你也可以自己決定隊友的強度。</li>
 <li><b>四種對手強度：</b>DUPR 3.0（新手）、4.0（中階）、5.0（進階）、6.0（高手）。</li>
@@ -58,12 +58,12 @@ export const zh = {
       title: 'Pickle Ball Dual 操作說明：按鍵、擊球與出手時機',
       description: 'Pickle Ball Dual 操作與攻略：W A S D 移動，Space、J、K、L 打出抽球、吊球、Dink、高吊球，腳下光圈出手時機與 DUPR 3.0–6.0 強度。',
       h1: 'Pickle Ball Dual 操作說明：按鍵、擊球與出手時機',
-      lede: 'Pickle Ball Dual 全程用鍵盤操作：<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動、<kbd>Space</kbd> 抽球，<kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> 分別是吊球、Dink 和高吊球。這篇說明會帶你看完所有按鍵、每一種擊球的使用時機、腳下光圈的顏色、遊戲模式，以及 DUPR 四種對手強度。',
+      lede: 'Pickle Ball Dual 在電腦上用鍵盤操作（<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動、<kbd>Space</kbd> 抽球，<kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> 分別是吊球、Dink 和高吊球），在手機和平板上則用螢幕上的觸控按鈕。這篇說明會帶你看完所有按鍵、每一種擊球的使用時機、腳下光圈的顏色、遊戲模式，以及 DUPR 四種對手強度。',
       howto: {
         name: '如何玩 Pickle Ball Dual',
         description: '在免費的瀏覽器 3D 匹克球遊戲 Pickle Ball Dual 中開始並打贏第一場比賽。',
         steps: [
-          ['打開遊戲並按開始比賽', '用 Chrome 或 Safari 等桌面版瀏覽器打開 Pickle Ball Dual，在主選單按「開始比賽」。'],
+          ['打開遊戲並按開始比賽', '用 Chrome 或 Safari 等新版瀏覽器（電腦、手機或平板皆可）打開 Pickle Ball Dual，在主選單按「開始比賽」。'],
           ['選擇模式與計分', '選擇雙打（你和 AI 隊友對兩位 AI 對手）或單打，再選傳統計分（打到 11 分）或 Rally 計分（打到 15 分）。'],
           ['選擇對手強度', '選擇對手的 DUPR 強度 3.0 到 6.0（雙打還可選隊友強度）、持拍手與畫質，然後按「開始比賽」。'],
           ['發球', '輪到你發球時，按 Space 打出快速深球（J 或 K 是柔和發球，L 是高球發球）；發球時按住 A 或 D 可以決定落點偏左或偏右。'],
@@ -75,7 +75,7 @@ export const zh = {
 <h2 id="start">要怎麼開始一場比賽？</h2>
 <p>打開遊戲按「開始比賽」，選好單打或雙打、計分方式與對手 DUPR 強度（3.0、4.0、5.0 或 6.0），再按一次「開始比賽」就開球。整個遊戲在瀏覽器裡執行，免下載、免註冊。</p>
 <ol class="steps">
-<li><b>打開遊戲並按「開始比賽」：</b>用 Chrome 或 Safari 等桌面版瀏覽器。</li>
+<li><b>打開遊戲並按「開始比賽」：</b>用 Chrome 或 Safari 等新版瀏覽器（電腦、手機或平板皆可）。</li>
 <li><b>選擇模式與計分：</b>雙打（你和 AI 隊友對兩位 AI 對手）或單打，再選傳統計分（打到 11 分）或 Rally 計分（打到 15 分）。</li>
 <li><b>選擇對手強度：</b>DUPR 3.0、4.0、5.0 或 6.0（雙打還可選隊友強度），再選持拍手與畫質，按「開始比賽」。</li>
 <li><b>發球：</b>按 <kbd>Space</kbd> 打快速深球（<kbd>J</kbd> 或 <kbd>K</kbd> 是柔和發球，<kbd>L</kbd> 是高球發球）；發球時按住 <kbd>A</kbd> 或 <kbd>D</kbd> 可決定偏左或偏右。</li>
@@ -99,6 +99,23 @@ export const zh = {
 <tr><th scope="row">暫停</th><td><kbd>Esc</kbd></td><td>暫停或繼續；切換到其他分頁或視窗時也會自動暫停。</td></tr>
 <tr><th scope="row">其他</th><td><kbd>M</kbd> <kbd>H</kbd> <kbd>R</kbd></td><td>M 靜音、H 隱藏按鍵提示、R（或點一下畫面）跳過重播。</td></tr>
 </tbody></table></div>
+
+<h2 id="touch">手機和平板要怎麼操作？</h2>
+<p>在手機或平板上，遊戲會自動顯示觸控按鈕：左手拇指下是浮動搖桿，用來移動；右手拇指下有四顆不同顏色的按鈕，用來擊球。不需要鍵盤；如果你接上鍵盤，觸控按鈕會自動隱藏，改用上面的按鍵。</p>
+<div class="tablewrap"><table>
+<caption class="sr">觸控操作</caption>
+<thead><tr><th scope="col">動作</th><th scope="col">觸控方式</th><th scope="col">效果</th></tr></thead>
+<tbody>
+<tr><th scope="row">移動</th><td>在畫面左半邊任何地方按住拖曳</td><td>拇指下會出現搖桿：往上衝向網前、往下退後、左右橫移，推得越遠移動越快。</td></tr>
+<tr><th scope="row">抽球</th><td>粉紅色的大按鈕「抽球」</td><td>點一下是快速抽球；按住蓄力（按鈕外圈約 0.7 秒填滿），放開時擊球。遇到高球會自動變成殺球。</td></tr>
+<tr><th scope="row">吊球</th><td>綠色按鈕「吊球」</td><td>柔和的弧線球，落進對方廚房區。</td></tr>
+<tr><th scope="row">Dink</th><td>紫色按鈕「Dink」</td><td>輕輕過網、落在廚房區的短球，站在網前效果最好。</td></tr>
+<tr><th scope="row">高吊球</th><td>藍色按鈕「高吊」</td><td>拉出高弧線，把對手逼回底線。</td></tr>
+<tr><th scope="row">瞄準</th><td>擊球瞬間讓搖桿保持推向左或右</td><td>推過箭頭記號就會打向那一側；留在中間就是最安全的中路球。</td></tr>
+<tr><th scope="row">發球</th><td>任一擊球按鈕</td><td>輪到你發球時，點「抽球」是快速深球，「高吊」是高球，「吊球」或「Dink」是柔和發球。</td></tr>
+<tr><th scope="row">暫停等功能</th><td>右上角的按鈕</td><td>暫停、音效與全螢幕（瀏覽器支援時）。重播時點一下畫面即可跳過。</td></tr>
+</tbody></table></div>
+<p>橫向與直向都能玩，橫向視野比較寬。腳下光圈變綠時，按鈕外圈也會亮綠色，這時點擊球鈕就對了。手機預設使用「低」畫質、平板使用「中」畫質，讓畫面保持流暢；比賽進行時螢幕不會自動變暗。把網頁加入主畫面，就能以全螢幕方式遊玩。</p>
 
 <h2 id="shots">有哪些擊球方式？什麼時候該用？</h2>
 <p>你可以用按鍵打出四種球（抽球、吊球、Dink、高吊球），另外還有兩種由遊戲自動判斷的球：殺球與繞網柱（ATP）。軟的球用來取得網前主導權，快的球用來結束這一分。</p>
@@ -272,7 +289,7 @@ ${ringTable}
 <p>傳統計分打到 11 分，而且要領先 2 分，所以 11 比 9 贏，11 比 10 還不算，要繼續打下去。在 Pickle Ball Dual 裡，Rally 計分是打到 15 分，一樣要領先 2 分。真實比賽有時也會打到 15 分或 21 分。</p>
 
 <h2 id="simplified">Pickle Ball Dual 簡化了哪些正式規則？</h2>
-<p>遊戲遵守核心規則，但為了配合鍵盤操作和對戰 AI，簡化了少數細節。如果你是想學真正上場的規則，請記得以下的差異。</p>
+<p>遊戲遵守核心規則，但為了方便快速對戰 AI，簡化了少數細節。如果你是想學真正上場的規則，請記得以下的差異。</p>
 <ul>
 <li><b>廚房區慣性：</b>正式規則看的是截擊後的慣性是否把你帶進廚房區，遊戲則用 0.6 秒的時間窗口判定。</li>
 <li><b>沒有模擬的部分：</b>換邊、暫停、碰網、連續擊球，以及發球時的拍面位置。</li>
@@ -285,16 +302,17 @@ ${ringTable}
 
     faq: {
       name: '常見問題',
-      title: 'Pickle Ball Dual 常見問題：免費、Mac、規則與 DUPR',
-      description: 'Pickle Ball Dual 常見問題：是否免費、Mac 怎麼玩、兩跳規則、0-0-2、Dink、ATP、廚房區、DUPR 強度與計分方式。',
+      title: 'Pickle Ball Dual 常見問題：免費、手機、Mac、規則與 DUPR',
+      description: 'Pickle Ball Dual 常見問題：是否免費、手機與 Mac 怎麼玩、兩跳規則、0-0-2、Dink、ATP、廚房區、DUPR 強度與計分方式。',
       h1: 'Pickle Ball Dual 常見問題',
       lede: '關於這款免費 3D 匹克球遊戲，以及匹克球本身的快速解答。每個答案都能單獨閱讀；想看完整說明，請點選下方連結。',
       faq: [
         ['Pickle Ball Dual 是什麼？', 'Pickle Ball Dual 是一款在瀏覽器裡玩的免費 3D 匹克球遊戲。你可以打單打或雙打，對手是 DUPR 3.0 到 6.0 的電腦 AI，遊戲採用真實的匹克球規則，免下載、免註冊。'],
         ['可以免費在線上玩匹克球嗎？', '可以。Pickle Ball Dual 在瀏覽器就能免費遊玩：打開網頁、按「開始比賽」就能開打，不用下載、註冊或付費。你對戰的是 AI 對手，目前沒有線上多人對戰。'],
-        ['玩 Pickle Ball Dual 需要下載、外掛或帳號嗎？', '不需要。它是一個網頁，只要有新版的桌面瀏覽器（支援 WebGL）和鍵盤就能玩。你的設定與上次的比賽選項只會儲存在你自己的瀏覽器裡，不會傳到伺服器。'],
+        ['玩 Pickle Ball Dual 需要下載、外掛或帳號嗎？', '不需要。它是一個網頁，只要有支援 WebGL 的新版瀏覽器就能玩：電腦用鍵盤，手機和平板用螢幕上的觸控按鈕。你的設定與上次的比賽選項只會儲存在你自己的瀏覽器裡，不會傳到伺服器。'],
         ['Mac 要怎麼玩？', '在 Mac 上用 Safari 或 Chrome 打開 Pickle Ball Dual，按「開始比賽」，用鍵盤操作：W、A、S、D 移動，Space 抽球，J、K、L 分別是吊球、Dink 和高吊球。如果球場沒有出現，請在瀏覽器中開啟硬體加速；比較舊的 Mac 可以改用低畫質。'],
-        ['哪些瀏覽器和裝置可以玩？', 'Pickle Ball Dual 是為桌面版瀏覽器設計的，例如新版的 Chrome 和 Safari，需要 WebGL 與鍵盤。遊戲沒有觸控操作，所以沒有外接鍵盤的手機或平板無法遊玩。'],
+        ['手機或平板可以玩 Pickle Ball Dual 嗎？', '可以。用 iPhone、iPad 的 Safari，或 Android 手機、平板的 Chrome 打開網頁，按「開始比賽」就能玩。遊戲會顯示用來移動的觸控搖桿，以及抽球、吊球、Dink、高吊四顆擊球按鈕，橫向和直向都能玩；橫向視野最好，手機預設使用低畫質讓畫面更流暢。'],
+        ['哪些瀏覽器和裝置可以玩？', 'Pickle Ball Dual 可在新版的 Chrome、Safari、Edge 和 Firefox（需支援 WebGL）上遊玩：電腦用鍵盤，iPhone、iPad 與 Android 手機、平板用觸控按鈕。比較舊的手機建議使用低畫質。'],
         ['可以和朋友或其他人線上對打嗎？', '不行。Pickle Ball Dual 是單人遊戲：雙打時由你和 AI 隊友對戰兩位 AI 對手，單打則是對戰一位 AI。目前沒有線上多人對戰，也沒有帳號系統。'],
         ['匹克球的兩跳規則是什麼？', '兩跳規則是指發球必須先在接發球方彈地，接發球也必須先在發球方彈地，雙方才可以截擊。這兩次彈地之後，球員就可以在空中直接擊球，但廚房區內除外。'],
         ['匹克球的 0-0-2 是什麼意思？', '0-0-2 是雙打開局的報分：發球方 0 分、接發球方 0 分，目前是第二發球員在發球。第一個發球的一方，第一輪只有一位發球員，所以從第二發球員開始，輸掉第一球就換發球。'],

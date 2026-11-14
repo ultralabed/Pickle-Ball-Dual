@@ -12,7 +12,10 @@ import { createAudio } from './ui/audio.js';
 import { createVoice } from './ui/voice.js';
 import { loadSettings, saveSettings } from './ui/store.js';
 import { teamLabel } from './ui/text.js';
-import { t, playerName, setLang, getLang, detectLang, isLang, onLangChange, applyStatic } from './ui/i18n.js';
+import { createTouch, installPageGuards } from './ui/touch.js';
+import { createWakeLock } from './ui/wake.js';
+import { initDevice, isTouchUI, isCoarse, onUIModeChange, toggleFullscreen, isFullscreen, buzz } from './ui/device.js';
+import { t, has, playerName, setLang, getLang, detectLang, isLang, onLangChange, applyStatic } from './ui/i18n.js';
 
 const $ = (s) => document.querySelector(s);
 const MAX_STEPS = 40;            // never simulate more than this per rendered frame (no spiral of death)
@@ -23,6 +26,8 @@ const FAULT_KEYS = { out: 1, net: 1, doubleBounce: 1, kitchen: 1, twoBounceRule:
 const DETAIL_KEYS = new Set(['kitchen', 'twoBounceRule', 'serveShort', 'serveWrongCourt']);   // faults with an extra rule line
 
 // ------------------------------------------------------------------ setup
+initDevice();          // touch UI vs keyboard UI: starts from (pointer: coarse), then follows the last input type used
+installPageGuards();   // no scroll / rubber-band / pinch / long-press menus outside scrollable panels
 const settings = loadSettings();
 // language: stored choice, else zh-* browsers get Traditional Chinese and everything else English
 // (a ?lang=en / ?lang=zh-TW link, used by the guide pages' "Play now" buttons, wins over both for this visit)
@@ -33,10 +38,12 @@ const canvas = $('#game');
 const hud = createHud($('#hudroot'));
 const audio = createAudio();
 const voice = createVoice();
+const wake = createWakeLock();
 const replayBuf = createReplayBuffer();
 let view = null, viewQuality = settings.quality;
 try {
-  view = createView(canvas, { quality: settings.quality, preserveDrawingBuffer: /[?&]pdb=1/.test(location.search) });
+  // multisampling is fixed at context creation: skip it for the low preset on touch devices (phones are fill-rate bound)
+  view = createView(canvas, { quality: settings.quality, antialias: !(settings.quality === 'low' && isCoarse()), preserveDrawingBuffer: /[?&]pdb=1/.test(location.search) });
 } catch (err) {
   console.error('WebGL init failed', err);
   document.body.insertAdjacentHTML('beforeend', `<div style="position:fixed;inset:0;display:grid;place-items:center;color:#fff;font:18px system-ui;text-align:center;padding:24px">${t('app.noWebgl')}</div>`);
@@ -55,17 +62,36 @@ const G = {
   evlog: [],              // debug: recent sim events (for automated playtests)
 };
 
+// WebGL context loss (mobile browsers drop it under memory pressure / when backgrounded): say so instead of a frozen canvas
+function showContextLost(on) {
+  let box = document.getElementById('ctxlost');
+  if (!on) { if (box) box.remove(); return; }
+  if (box) return;
+  box = document.createElement('div');
+  box.id = 'ctxlost'; box.setAttribute('role', 'alert');
+  const p = document.createElement('p'); p.textContent = t('app.ctxLost');
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = t('app.reload');
+  box.append(p, b);
+  box.addEventListener('click', () => { try { location.reload(); } catch (e) { /* ignore */ } });
+  document.body.append(box);
+}
+canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); G.ctxLost = true; try { pause(); } catch (err) { /* ignore */ } showContextLost(true); });
+canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; showContextLost(false); idleRender = 2; });
+
 const input = createInput({
   onEscape: () => onEscape(),
   onToggleLegend: () => setSetting('legend', !settings.legend),
   onToggleMute: () => setSetting('muted', !settings.muted),
   onSkipReplay: () => skipReplay(),
 });
+const touch = createTouch($('#touchroot'), input);
 
 voice.onLine = (t) => { if (!G.demo) hud.ref(t); };
 hud.pauseBtn.addEventListener('click', (e) => { e.currentTarget.blur(); audio.unlock(); pause(); });
 hud.muteBtn.addEventListener('click', (e) => { e.currentTarget.blur(); setSetting('muted', !settings.muted); });
 hud.legendBtn.addEventListener('click', (e) => { e.currentTarget.blur(); setSetting('legend', !settings.legend); });
+if (hud.fsBtn) hud.fsBtn.addEventListener('click', (e) => { e.currentTarget.blur(); audio.unlock(); toggleFullscreen(); });
+for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, () => { hud.fsSync(); scheduleResize(); });
 
 // ------------------------------------------------------------------ settings
 function applySettings() {
@@ -149,6 +175,7 @@ function startMatch(o = {}) {
   const sim = createSim(cfg);
   attachSim(sim, false);
   G.mode = 'play'; G.paused = false;
+  wake.set(true);
   menus.hide();
   hud.setup(sim.state); hud.updateScore(sim.state); hud.show(true); hud.setLegend(settings.legend);
   input.releaseAll(); input.setEnabled(true);
@@ -169,7 +196,7 @@ function startDemo() {
 }
 
 function toMenu() {
-  G.mode = 'menu'; G.paused = false;
+  G.mode = 'menu'; G.paused = false; wake.set(false);
   input.setEnabled(false); input.releaseAll();
   hud.show(false); hud.clearTransient();
   startDemo();
@@ -180,12 +207,12 @@ function toMenu() {
 // ------------------------------------------------------------------ pause
 function pause() {
   if (G.demo || G.paused || (G.mode !== 'play' && G.mode !== 'replay')) return;
-  G.paused = true; input.releaseAll(); voice.pause(); audio.setCrowd(false); menus.show('pause');
+  G.paused = true; input.releaseAll(); voice.pause(); audio.setCrowd(false); wake.set(false); menus.show('pause');
   idleRender = 2;
 }
 function resume() {
   if (!G.paused) return;
-  G.paused = false; menus.hide(); voice.resume(); audio.setCrowd(true); input.releaseAll();
+  G.paused = false; menus.hide(); voice.resume(); audio.setCrowd(true); input.releaseAll(); wake.set(true);
 }
 function onEscape() {
   const cur = menus.current;
@@ -201,8 +228,11 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) { pause(); audio.suspend(); } else { audio.resume(); }
 });
 // any key / pointer press wakes a suspended / interrupted AudioContext (not only menu clicks)
-for (const ev of ['keydown', 'pointerdown']) window.addEventListener(ev, () => audio.unlock(), { capture: true });
+// (iOS Safari only unlocks WebAudio / speechSynthesis from touchend / pointerup / click, never from touchstart / pointerdown)
+const unlockMedia = () => { audio.unlock(); voice.unlock(); };
+for (const ev of ['keydown', 'pointerdown', 'pointerup', 'touchend', 'click']) window.addEventListener(ev, unlockMedia, { capture: true, passive: true });
 window.addEventListener('blur', () => pause());
+window.addEventListener('pagehide', () => { input.releaseAll(); pause(); });
 
 // ------------------------------------------------------------------ helpers
 function humanSwinging(state) {
@@ -274,6 +304,7 @@ function handleEvents(evs) {
     switch (e.type) {
       case 'hit':
         if (e.playerId === HUMAN) {
+          if (isTouchUI()) buzz(e.shot === 'smash' ? 28 : 12);
           hud.toast(e.isServe ? 'serve' : e.atp ? 'atp' : e.shot, e.power);
           if (e.isVolley && !e.isServe) G.lastHumanVolley = s.time;
         }
@@ -331,7 +362,7 @@ function onGameOver() {
 
 function showGameOver() {
   const s = G.sim.state;
-  G.mode = 'over';
+  G.mode = 'over'; wake.set(false);
   input.setEnabled(false); input.releaseAll();
   hud.clearTransient();
   menus.gameOver({ winner: s.score.winner, points: s.score.points.slice(), names: () => [teamLabel(s, 0), teamLabel(s, 1)], stats: G.stats });
@@ -388,10 +419,11 @@ function updateHud(state, dt) {
   hud.updateScore(state);
   hud.showRally(state.phase === 'rally' || state.phase === 'serve' ? state.rally.hits : 0);
   input.tick();
+  touch.update(input.charge, input.charging, G.cue);
   hud.charge(input.charge, input.charging && G.mode === 'play');
   if (G.mode === 'play' && !G.autoplay) {
     const [text, kind] = contextHint(state);
-    hud.hint(text, kind);
+    hud.hint(text && isTouchUI() && has(`${text}.touch`) ? `${text}.touch` : text, kind);
   } else hud.hint(null);
 }
 
@@ -402,8 +434,10 @@ function viewStateOf(state) {
 
 let last = performance.now();
 let idleRender = 0;           // extra frames to draw while paused (the pause screen covers a frozen scene: render once, then idle)
+function syncTouch() { touch.show(isTouchUI() && G.mode === 'play' && !G.paused && !G.demo && !!G.sim); }
 function frame(now) {
   requestAnimationFrame(frame);
+  syncTouch();
   let dt = (now - last) / 1000; last = now;
   if (!(dt > 0)) dt = 1 / 60;
   dt = Math.min(dt, MAX_FRAME_DT);
@@ -435,7 +469,8 @@ function frame(now) {
     }
     if (G.mode !== 'replay') {
       const st = sim.state;
-      if (view.setCue) view.setCue(G.demo || G.autoplay || G.mode !== 'play' ? 0 : swingCue(st));
+      G.cue = G.demo || G.autoplay || G.mode !== 'play' ? 0 : swingCue(st);
+      if (view.setCue) view.setCue(G.cue);
       view.update(viewStateOf(st), vdt, { replay: false });
       updateHud(st, vdt);
     } else view.update(viewStateOf(sim.state), 0);
@@ -443,7 +478,20 @@ function frame(now) {
   if (!G.noRender) view.render();
 }
 
-window.addEventListener('resize', () => { view.resize(); idleRender = 2; });
+// size handling: iOS URL-bar show/hide, rotation (iOS reports stale sizes for a moment after `orientationchange`), split view, fullscreen
+function syncViewport() {
+  try { document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`); } catch (e) { /* ignore */ }
+}
+let resizeTimer = 0, resizeRaf = 0;
+function applyResize() { syncViewport(); view.resize(); idleRender = 2; }
+function scheduleResize() {
+  if (!resizeRaf) resizeRaf = requestAnimationFrame(() => { resizeRaf = 0; applyResize(); });
+  clearTimeout(resizeTimer); resizeTimer = setTimeout(applyResize, 300);
+}
+window.addEventListener('resize', scheduleResize);
+window.addEventListener('orientationchange', () => { input.releaseAll(); scheduleResize(); });
+if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleResize);
+syncViewport();
 
 // ------------------------------------------------------------------ debug / test hook
 function setAutoplay(on) {
@@ -473,7 +521,7 @@ function stepTicks(n, render = true) {
 
 window.__game = {
   get sim() { return G.sim; }, get view() { return view; }, get mode() { return G.mode; }, get paused() { return G.paused; },
-  get G() { return G; }, settings, voice, audio, hud, input, menus, replayBuf,
+  get G() { return G; }, settings, voice, audio, hud, input, menus, replayBuf, touch, wake, isTouchUI,
   getState: () => G.sim.state,
   startMatch, setAutoplay, advance, stepTicks, skipReplay, pause, resume, toMenu,
   settleView: (n = 12, dt = 0.1) => { for (let i = 0; i < n; i++) view.update(viewStateOf(G.sim.state), dt); view.setCue(G.autoplay || G.demo ? 0 : swingCue(G.sim.state)); view.update(viewStateOf(G.sim.state), 0.001); view.render(); },
@@ -490,12 +538,26 @@ window.__game = {
   predict: (maxT = 2.5) => { const st = G.sim.state; return predictPath(st.ball.pos, st.ball.vel, st.ball.bounces, st.internal.sp, maxT, 3); },
 };
 
+// ------------------------------------------------------------------ touch <-> keyboard UI
+function syncModeText() {
+  const sk = $('.replay-skip');
+  if (sk) { sk.dataset.i18n = isTouchUI() ? 'replay.skip.touch' : 'replay.skip'; sk.textContent = t(sk.dataset.i18n); }
+}
+onUIModeChange(() => {
+  input.releaseAll();                 // never carry held keys / fingers over to the other input type
+  syncModeText();
+  menus.relang(settings);             // main footer, help (touch list vs key table), pause footer, settings rows
+  hud.relang(G.sim ? G.sim.state : null);
+});
+syncModeText();
+
 // ------------------------------------------------------------------ language
 onLangChange((code) => {
   settings.lang = code; saveSettings(settings);
   applyStatic();
   menus.relang(settings);
   hud.relang(G.sim ? G.sim.state : null);
+  touch.relang();
 });
 
 // ------------------------------------------------------------------ boot

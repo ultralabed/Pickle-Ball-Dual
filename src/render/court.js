@@ -88,7 +88,7 @@ function cloudTexture() {
 export function buildCourt(scene, quality) {
   const group = new THREE.Group(); scene.add(group);
   const stuff = { group, cheerT: 0, cheerAmp: 0, netWobble: 0 };
-  const QD = { low: 0.3, medium: 0.65, high: 1 }[quality] ?? 1;
+  const QD = { low: 0.15, medium: 0.65, high: 1 }[quality] ?? 1;
 
   // ---- ground
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), std('#6aa653', { roughness: 1 }));
@@ -238,7 +238,7 @@ export function buildCourt(scene, quality) {
   }
   stuff.rebuildCrowd = (q2) => {
     if (crowd.bodies) { group.remove(crowd.bodies, crowd.heads); crowd.bodies.geometry.dispose(); crowd.heads.geometry.dispose(); crowd.bodies.material.dispose(); crowd.heads.material.dispose(); crowd.bodies.dispose(); crowd.heads.dispose(); }
-    mkCrowd({ low: 0.3, medium: 0.65, high: 1 }[q2] ?? 1);
+    mkCrowd({ low: 0.15, medium: 0.65, high: 1 }[q2] ?? 1);
   };
 
   // ---- trees & light poles
@@ -288,13 +288,15 @@ export function buildCourt(scene, quality) {
   stuff.update = (dt, time) => {
     stuff.cheerAmp = Math.max(0, stuff.cheerAmp - dt * 0.55);
     stuff._ct = (stuff._ct || 0) + dt;
-    if (stuff._ct > 1 / 24) { stuff._ct = 0; writeCrowd(time, Math.min(1, stuff.cheerAmp)); }
+    if (stuff._ct > (stuff.lowPower ? 1 / 10 : 1 / 24)) { stuff._ct = 0; writeCrowd(time, Math.min(1, stuff.cheerAmp)); }
     stuff.netWobble = Math.max(0, stuff.netWobble - dt * 1.6);
     net.rotation.x = Math.sin(time * 38) * 0.02 * stuff.netWobble;
   };
   stuff.cheer = (a) => { stuff.cheerAmp = Math.min(1.5, stuff.cheerAmp + a); };
   stuff.setShadowSize = (s) => { sun.shadow.mapSize.set(s, s); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } };
   stuff.court = court;
+  stuff.lowPower = false;
+  stuff.setLowPower = (on) => { stuff.lowPower = !!on; trunks.castShadow = leaves.castShadow = !on; };
   mkCrowd(QD);
   return stuff;
 }

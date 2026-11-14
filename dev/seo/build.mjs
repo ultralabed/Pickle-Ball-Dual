@@ -216,13 +216,13 @@ ${en.llms.facts.map((f) => `- ${f}`).join('\n')}
 
 ## Play
 
-- [Play ${SITE.name}](${abs('')}): the game itself (full-screen WebGL canvas; needs a desktop browser and a keyboard)
+- [Play ${SITE.name}](${abs('')}): the game itself (full-screen WebGL canvas; keyboard on desktop, touch controls on phones and tablets)
 
 ## Guides (English)
 
-- [How to play](${abs(pathOf('en', 'how'))}): controls, the six shots (drive, drop, dink, lob, smash, ATP), foot-ring timing colours, game modes, DUPR 3.0 to 6.0 AI levels
+- [How to play](${abs(pathOf('en', 'how'))}): keyboard and touch controls, the six shots (drive, drop, dink, lob, smash, ATP), foot-ring timing colours, game modes, DUPR 3.0 to 6.0 AI levels
 - [Pickleball rules](${abs(pathOf('en', 'rules'))}): court size, serve, two-bounce rule, kitchen, faults, doubles 0-0-2 scoring, singles, rally scoring, and which rules the game simplifies
-- [FAQ](${abs(pathOf('en', 'faq'))}): ${enP.faq.faq.length} short answers (free to play, Mac, two-bounce rule, 0-0-2, dink, ATP, DUPR, scoring)
+- [FAQ](${abs(pathOf('en', 'faq'))}): ${enP.faq.faq.length} short answers (free to play, phone and tablet, Mac, two-bounce rule, 0-0-2, dink, ATP, DUPR, scoring)
 
 ## Guides (Traditional Chinese, 繁體中文)
 
@@ -284,7 +284,8 @@ write('manifest.webmanifest', JSON.stringify({
   start_url: './',
   scope: './',
   display: 'standalone',
-  orientation: 'landscape',
+  display_override: ['fullscreen', 'standalone'],
+  orientation: 'any',
   background_color: SITE.themeColor,
   theme_color: SITE.themeColor,
   categories: ['games', 'sports'],
@@ -308,10 +309,10 @@ const GAME_LD = {
   image: abs(SITE.ogImage),
   screenshot: { '@type': 'ImageObject', url: abs(SITE.ogImage), width: 1200, height: 630, caption: SITE.ogImageAlt },
   genre: ['Sports', 'Simulation'],
-  gamePlatform: 'Web browser',
+  gamePlatform: ['Desktop web browser', 'Mobile web browser (iOS, Android)'],
   operatingSystem: 'Any (web browser)',
   applicationCategory: 'GameApplication',
-  browserRequirements: 'Requires a desktop web browser with WebGL and a keyboard',
+  browserRequirements: 'Requires a web browser with WebGL; keyboard on desktop, on-screen touch controls on phones and tablets',
   playMode: 'https://schema.org/SinglePlayer',
   inLanguage: ['en', 'zh-Hant'],
   isAccessibleForFree: true,
@@ -323,6 +324,7 @@ const GAME_LD = {
     'Two-bounce rule, kitchen (non-volley zone) and 0-0-2 doubles start',
     'Drive, drop, dink, lob, smash and around-the-post (ATP) shots',
     'Slow-motion instant replays and English referee score calls',
+    'Touch controls for phones and tablets, landscape and portrait',
     'English and Traditional Chinese interface',
   ],
   softwareHelp: { '@type': 'WebPage', name: 'How to play Pickle Ball Dual', url: abs(pathOf('en', 'how')) },
@@ -349,6 +351,10 @@ ${hreflangs('', pathOf('zh', 'home'))}
 ${socialTags({ title: HOME.en.title, description: HOME.en.description, url: abs(''), locale: 'en_US', altLocale: 'zh_TW' })}
 <meta name="application-name" content="${esc(SITE.name)}">
 <meta name="apple-mobile-web-app-title" content="${esc(SITE.name)}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="${SITE.themeColor}">
 <meta name="color-scheme" content="dark">
 ${iconLinks('./')}

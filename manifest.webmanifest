@@ -8,7 +8,11 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "landscape",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
   "background_color": "#0b1a2c",
   "theme_color": "#0b1a2c",
   "categories": [

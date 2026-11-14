@@ -58,6 +58,21 @@ export function createVoice() {
       queue.push(text); pump();
     } catch (e) { /* ignore */ }
   };
+  // iOS Safari only starts speechSynthesis from a user gesture: speak one silent utterance on the first tap / key press so later
+  // referee calls (which come from the game loop, not a gesture) are allowed. Never throws, never audible.
+  let unlocked = false;
+  api.unlock = () => {
+    if (unlocked || !synth) return;
+    unlocked = true;
+    try {
+      if (!synth.speaking && !synth.pending) {
+        const u = new SpeechSynthesisUtterance(' ');
+        u.volume = 0; u.lang = 'en-US';
+        synth.speak(u);
+      }
+      synth.resume();
+    } catch (e) { /* ignore */ }
+  };
   api.setEnabled = (v) => { enabled = !!v; if (!enabled) api.stop(); };
   api.setMuted = (v) => { muted = !!v; if (muted) api.stop(); };
   api.stop = () => { queue.length = 0; currentUtterance = null; try { if (synth) { synth.cancel(); synth.resume(); } } catch (e) { /* ignore */ } };

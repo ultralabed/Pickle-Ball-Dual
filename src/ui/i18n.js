@@ -10,7 +10,7 @@ const en = {
   'meta.title': 'Pickle Ball Dual — Free 3D Pickleball Game in Your Browser',
   'meta.description': 'Play Pickle Ball Dual, a free 3D pickleball game in your browser. Singles or doubles vs AI from DUPR 3.0 to 6.0, real rules, no install or sign-up.',
   'app.noWebgl': 'Could not start the 3D view (WebGL). Please use a recent Chrome / Safari with hardware acceleration enabled.',
-  'canvas.aria': 'Pickle Ball Dual: 3D pickleball court. Play with the keyboard.',
+  'canvas.aria': 'Pickle Ball Dual: 3D pickleball court. Play with the keyboard or the on-screen touch controls.',
   'lang.label': '語言 / Language',
   'lang.toggleAria': 'Language',
 
@@ -146,6 +146,28 @@ const en = {
   'replay.title': 'HIGHLIGHT', 'replay.tag': 'REPLAY',
   'replay.skip': 'Press R or click to skip',
 
+  // ---- touch (phones and tablets)
+  'app.ctxLost': 'The 3D view stopped (the graphics context was lost). Tap to reload.',
+  'app.reload': 'Reload',
+  'main.foot.touch': 'Left thumb: move · Right thumb: Drive / Drop / Dink / Lob',
+  'pause.foot.touch': 'Tap Resume to keep playing',
+  'replay.skip.touch': 'Tap anywhere to skip',
+  'touch.move': 'MOVE', 'touch.drive': 'Drive', 'touch.drop': 'Drop', 'touch.dink': 'Dink', 'touch.lob': 'Lob', 'touch.drive.sub': 'hold = power',
+  'help.touch.title': 'Touch controls',
+  'help.touch.move': 'Move', 'help.touch.move.d': 'Touch and drag anywhere on the left side: a joystick appears under your thumb. Up runs toward the net, down goes back.',
+  'help.touch.drive': 'Drive', 'help.touch.drive.d': 'Tap for a quick drive; hold to charge (the ring fills), release to hit. A high ball becomes a smash.',
+  'help.touch.drop': 'Drop', 'help.touch.drop.d': 'Soft arc into the kitchen: the classic third-shot drop',
+  'help.touch.dink': 'Dink', 'help.touch.dink.d': 'Soft shot into the kitchen; best from near the net',
+  'help.touch.lob': 'Lob', 'help.touch.lob.d': 'High arc that pushes opponents back to the baseline',
+  'help.touch.aim': 'Aim', 'help.touch.aim.d': 'As you hit, keep the joystick pushed left or right (past the arrow) to aim that way; centred = safe middle',
+  'help.touch.serve': 'Serve', 'help.touch.serve.d': 'On your serve tap any shot button: Drive = fast deep serve, Lob = lob serve, Drop / Dink = soft serve',
+  'help.touch.other': 'Other', 'help.touch.other.d': 'Top right: pause, sound and full screen. Tap anywhere to skip a replay',
+  'help.tip.touch': 'A yellow circle marks where the ball will land. Tap a shot button when the ring under your feet turns green; the paddle meets the ball about 0.17 s later. Lime means perfect timing.',
+  'cue.green.d.touch': 'Tap a shot button now and you will make contact',
+  'hint.serve.touch': 'Your serve — tap Drive (Drop/Dink soft, Lob high, push the stick left/right to aim)',
+  'hint.serveUrge.touch': 'Your serve — tap Drive! (Drop/Dink soft, Lob high, push the stick to aim)',
+  'hud.fullscreen': 'Full screen', 'hud.fullscreenExit': 'Exit full screen',
+
   'player.you': 'You', 'player.mate': 'Partner', 'player.oppA': 'Opp A', 'player.oppB': 'Opp B', 'player.opp': 'Opponent',
 };
 
@@ -156,7 +178,7 @@ const zh = {
   'meta.title': 'Pickle Ball Dual 匹克球：免費瀏覽器 3D 匹克球遊戲',
   'meta.description': '免費的 3D 匹克球遊戲，開瀏覽器就能玩：單打、雙打對戰 DUPR 3.0 至 6.0 的 AI，採用真實規則，免下載、免註冊。',
   'app.noWebgl': '無法啟動 3D 畫面（WebGL）。請使用最新版 Chrome / Safari 並開啟硬體加速。',
-  'canvas.aria': 'Pickle Ball Dual 匹克球場：用鍵盤操作',
+  'canvas.aria': 'Pickle Ball Dual 匹克球場：用鍵盤或螢幕上的觸控按鈕操作',
   'lang.label': '語言 / Language',
   'lang.toggleAria': '語言',
 
@@ -291,6 +313,28 @@ const zh = {
 
   'replay.title': '精彩重播', 'replay.tag': 'REPLAY',
   'replay.skip': '按 R 或點擊畫面跳過',
+
+  // ---- touch (phones and tablets)
+  'app.ctxLost': '3D 畫面已中斷（圖形環境遺失），請點一下重新載入。',
+  'app.reload': '重新載入',
+  'main.foot.touch': '左手拇指移動 · 右手拇指：抽球／吊球／Dink／高吊',
+  'pause.foot.touch': '點「繼續」回到比賽',
+  'replay.skip.touch': '點一下畫面跳過',
+  'touch.move': '移動', 'touch.drive': '抽球', 'touch.drop': '吊球', 'touch.dink': 'Dink', 'touch.lob': '高吊', 'touch.drive.sub': '按住蓄力',
+  'help.touch.title': '觸控操作',
+  'help.touch.move': '移動', 'help.touch.move.d': '在畫面左半邊任何地方按住拖曳，拇指下會出現搖桿：往上衝向網前、往下退後。',
+  'help.touch.drive': '抽球', 'help.touch.drive.d': '點一下＝快速抽球；按住蓄力（圓環會填滿）、放開擊球；高球自動變殺球。',
+  'help.touch.drop': '吊球', 'help.touch.drop.d': '柔和的弧線，落進對方廚房區（第三拍經典吊球）',
+  'help.touch.dink': '短球 Dink', 'help.touch.dink.d': '輕輕過網、落在廚房區；站在網前效果最好',
+  'help.touch.lob': '高吊球', 'help.touch.lob.d': '拉出高弧線，把對手逼回底線',
+  'help.touch.aim': '瞄準', 'help.touch.aim.d': '擊球瞬間讓搖桿保持推向左或右（超過箭頭）就會打向那一側，在中間＝中路安全',
+  'help.touch.serve': '發球', 'help.touch.serve.d': '輪到你發球時點任一擊球鈕：抽球＝快速深球、高吊＝高球、吊球／Dink＝柔和發球',
+  'help.touch.other': '其他', 'help.touch.other.d': '右上角：暫停、音效、全螢幕。重播時點一下畫面即可跳過',
+  'help.tip.touch': '球的落點會出現黃色圓圈。腳下光圈變綠時點下擊球鈕，球拍約 0.17 秒後碰到球；亮黃綠代表正好落在最佳時機。',
+  'cue.green.d.touch': '現在點擊球鈕，就一定打得到',
+  'hint.serve.touch': '輪到你發球 — 點「抽球」快速發球（吊球／Dink 柔和、高吊＝高球），搖桿推向左右決定方向',
+  'hint.serveUrge.touch': '輪到你發球 — 點「抽球」！（吊球／Dink 柔和、高吊＝高球，搖桿決定左右）',
+  'hud.fullscreen': '全螢幕', 'hud.fullscreenExit': '離開全螢幕',
 
   'player.you': '你', 'player.mate': '隊友', 'player.oppA': '對手A', 'player.oppB': '對手B', 'player.opp': '對手',
 };

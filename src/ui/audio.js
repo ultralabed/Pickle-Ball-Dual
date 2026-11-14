@@ -57,7 +57,23 @@ export function createAudio() {
 
   const needsResume = () => ctx && (ctx.state === 'suspended' || ctx.state === 'interrupted');   // Safari reports 'interrupted' after tab switches / calls
   // Called on any keydown / pointerdown: creates the context, wakes it from 'suspended' / 'interrupted' (unless we paused it on purpose).
-  api.unlock = () => { if (!ensure()) return; if (!hold && needsResume()) ctx.resume().catch(() => {}); startCrowd(); };
+  // iOS Safari only lets a context start from touchend / click (not touchstart / pointerdown), so main.js calls this from all of them;
+  // the first successful call also plays a 1-sample silent buffer (the classic unlock) and asks iOS 17+ to use the "playback" audio
+  // session so the ringer switch does not mute the game.
+  let primed = false;
+  function prime() {
+    if (primed || !ctx) return;
+    primed = true;
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ }
+    try { const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch (e) { /* ignore */ }
+  }
+  api.unlock = () => {
+    try {
+      if (!ensure()) return;
+      if (!hold && needsResume()) ctx.resume().catch(() => {});
+      prime(); startCrowd();
+    } catch (e) { /* audio must never break input handling */ }
+  };
   /** Crowd bed on/off (off while the pause screen is up). */
   api.setCrowd = (on) => { crowdOn = !!on; if (crowdGain) crowdGain.gain.setTargetAtTime(crowdOn ? 1 : 0, ctx.currentTime, 0.12); };
   api.setMuted = (m) => { muted = !!m; if (master) master.gain.setTargetAtTime(muted ? 0 : volume, ctx.currentTime, 0.02); };

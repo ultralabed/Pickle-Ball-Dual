@@ -3,6 +3,7 @@
 import { h } from './dom.js';
 import { TEAM_COLOR } from './text.js';
 import { t, getLang, LANGS } from './i18n.js';
+import { isTouchUI } from './device.js';
 
 const KEYHELP = [
   ['move', ['W', 'A', 'S', 'D']],
@@ -14,6 +15,8 @@ const KEYHELP = [
   ['serve', ['Space', 'J', 'K', 'L']],
   ['other', ['Esc', 'M', 'H', 'R']],
 ];
+// touch help rows: [key, css colour of the matching on-screen control]
+const TOUCHHELP = [['move', '#9fb4d0'], ['drive', '#ff4fa8'], ['drop', '#2fe0b8'], ['dink', '#8e6bff'], ['lob', '#4aa8ff'], ['aim', '#9fb4d0'], ['serve', '#d9f23a'], ['other', '#9fb4d0']];
 const RULE_KEYS = ['rule.1', 'rule.2', 'rule.3', 'rule.4'];
 
 // ring colours under the human player's feet (same meaning in the HUD legend)
@@ -67,7 +70,7 @@ export function createMenus(root, cbIn) {
         btn(t('main.settings'), '', () => cb.openSettings('main'))),
       h('nav', { class: 'guide-links', 'aria-label': t('main.guide.aria') },
         ['how', 'rules', 'faq'].map((k) => h('a', { href: t(`guide.${k}.href`), text: t(`main.guide.${k}`) }))),
-      h('div', { class: 'foot', text: t('main.foot') })),
+      h('div', { class: 'foot', text: t(isTouchUI() ? 'main.foot.touch' : 'main.foot') })),
   ]);
 
   // ---------------------------------------------------------------- setup
@@ -97,15 +100,32 @@ export function createMenus(root, cbIn) {
 
   // ---------------------------------------------------------------- help
   let helpFrom = 'main';
-  mk('help', () => h('div', { class: 'panel help' }, h('h2', { text: t('help.title') }),
-    h('div', { class: 'helpcols' },
-      h('div', { class: 'helpgrid' }, KEYHELP.map(([k, ks]) => h('div', { class: 'hrow' }, h('span', { class: 'hn', text: t(`key.${k}`) }), h('span', { class: 'hk' }, ks.map((x) => h('kbd', { text: x }))), h('span', { class: 'hd', text: t(`key.${k}.d`) })))),
-      h('div', { class: 'helpside' },
-        h('h3', { text: t('help.rules') }), h('ul', { class: 'rules' }, RULE_KEYS.map((r) => h('li', { text: t(r) }))),
-        h('h3', { text: t('help.rings') }),
-        h('div', { class: 'cues' }, CUES.map(([c, k]) => h('div', { class: 'cue' }, h('i', { style: `background:${c};box-shadow:0 0 10px ${c}` }), h('b', { text: t(`cue.${k}`) }), h('span', { text: t(`cue.${k}.d`) })))),
-        h('p', { class: 'tip', text: t('help.tip') }))),
-    h('div', { class: 'btn-row' }, btn(t('common.back'), 'primary', () => cb.closeHelp(helpFrom)))));
+  // schematic of the touch layout (landscape phone): joystick on the left, the four thumb buttons in an arc on the right
+  const touchDiagram = () => {
+    const d = h('div', { class: 'tdiag', 'aria-hidden': 'true' });
+    d.innerHTML = '<svg viewBox="0 0 260 112" role="img"><rect x="2" y="2" width="256" height="108" rx="14" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.25)" stroke-width="2"/>'
+      + '<circle cx="58" cy="66" r="27" fill="rgba(255,255,255,.06)" stroke="#9fb4d0" stroke-width="2" stroke-dasharray="4 4"/><circle cx="58" cy="66" r="11" fill="#9fb4d0"/>'
+      + `<text x="58" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#cfe0f5">${t('touch.move')}</text>`
+      + '<circle cx="212" cy="76" r="22" fill="#ff4fa8"/><circle cx="170" cy="84" r="15" fill="#8e6bff"/><circle cx="182" cy="48" r="15" fill="#2fe0b8"/><circle cx="220" cy="32" r="15" fill="#4aa8ff"/>'
+      + `<g font-size="9" font-weight="800" fill="#06101d" text-anchor="middle"><text x="212" y="79">${t('touch.drive')}</text><text x="170" y="87">${t('touch.dink')}</text><text x="182" y="51">${t('touch.drop')}</text><text x="220" y="35">${t('touch.lob')}</text></g></svg>`;
+    return d;
+  };
+  mk('help', () => {
+    const touch = isTouchUI();
+    const left = touch
+      ? h('div', { class: 'helpgrid touchgrid' }, touchDiagram(), h('h3', { text: t('help.touch.title') }),
+        TOUCHHELP.map(([k, c]) => h('div', { class: 'hrow tr', style: `--c:${c}` }, h('span', { class: 'hn', text: t(`help.touch.${k}`) }), h('span', { class: 'hd', text: t(`help.touch.${k}.d`) }))))
+      : h('div', { class: 'helpgrid' }, KEYHELP.map(([k, ks]) => h('div', { class: 'hrow' }, h('span', { class: 'hn', text: t(`key.${k}`) }), h('span', { class: 'hk' }, ks.map((x) => h('kbd', { text: x }))), h('span', { class: 'hd', text: t(`key.${k}.d`) }))));
+    return h('div', { class: `panel help${touch ? ' touchhelp' : ''}` }, h('h2', { text: t('help.title') }),
+      h('div', { class: 'helpcols' },
+        left,
+        h('div', { class: 'helpside' },
+          h('h3', { text: t('help.rules') }), h('ul', { class: 'rules' }, RULE_KEYS.map((r) => h('li', { text: t(r) }))),
+          h('h3', { text: t('help.rings') }),
+          h('div', { class: 'cues' }, CUES.map(([c, k]) => h('div', { class: 'cue' }, h('i', { style: `background:${c};box-shadow:0 0 10px ${c}` }), h('b', { text: t(`cue.${k}`) }), h('span', { text: t(touch && k === 'green' ? 'cue.green.d.touch' : `cue.${k}.d`) })))),
+          h('p', { class: 'tip', text: t(touch ? 'help.tip.touch' : 'help.tip') }))),
+      h('div', { class: 'btn-row' }, btn(t('common.back'), 'primary', () => cb.closeHelp(helpFrom))));
+  });
 
   // ---------------------------------------------------------------- settings
   let setFrom = 'main', curSettings = null;
@@ -123,7 +143,7 @@ export function createMenus(root, cbIn) {
     return h('div', { class: 'panel wide' }, h('h2', { text: t('settings.title') }),
       h('div', { class: 'form' },
         row(t('lang.label'), sg.lang), row(t('setup.quality'), sg.quality), row(t('settings.sound'), sg.sound), row(t('settings.volume'), vol),
-        row(t('settings.voice'), sg.voice), row(t('settings.legend'), sg.legend)),
+        row(t('settings.voice'), sg.voice), isTouchUI() ? null : row(t('settings.legend'), sg.legend)),
       h('p', { class: 'tip', text: t('settings.saved') }),
       h('div', { class: 'btn-row' }, btn(t('common.back'), 'primary', () => cb.closeSettings(setFrom))));
   };
@@ -137,7 +157,7 @@ export function createMenus(root, cbIn) {
       btn(t('main.help'), '', () => cb.openHelp('pause')),
       btn(t('main.settings'), '', () => cb.openSettings('pause')),
       btn(t('pause.main'), 'ghost', () => cb.toMain())),
-    h('div', { class: 'foot', text: t('pause.foot') })));
+    h('div', { class: 'foot', text: t(isTouchUI() ? 'pause.foot.touch' : 'pause.foot') })));
 
   // ---------------------------------------------------------------- game over
   let lastResult = null;

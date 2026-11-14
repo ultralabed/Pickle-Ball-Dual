@@ -3,6 +3,7 @@ import { h } from './dom.js';
 import { teamLabel, TEAM_COLOR } from './text.js';
 import { CUES } from './menu.js';
 import { t } from './i18n.js';
+import { canFullscreen, isFullscreen } from './device.js';
 
 const KEYS = [
   [['W', 'A', 'S', 'D'], 'legend.move'],
@@ -42,16 +43,22 @@ export function createHud(root) {
   const topRight = h('div', { class: 'topright' });
   const pauseBtn = h('button', { class: 'iconbtn', tabindex: '-1', html: '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>' });
   const muteBtn = h('button', { class: 'iconbtn', tabindex: '-1' });
-  const legendBtn = h('button', { class: 'iconbtn', tabindex: '-1', html: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10h2M11 10h2M15 10h2M8 14h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' });
+  const legendBtn = h('button', { class: 'iconbtn legendbtn', tabindex: '-1', html: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10h2M11 10h2M15 10h2M8 14h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' });
   A(pauseBtn, 'title', 'hud.pauseTitle'); A(pauseBtn, 'aria-label', 'hud.pause');
   A(muteBtn, 'title', 'hud.muteTitle'); A(muteBtn, 'aria-label', 'hud.mute');
   A(legendBtn, 'title', 'hud.legendTitle'); A(legendBtn, 'aria-label', 'hud.legendAria');
-  topRight.append(rallyEl, legendBtn, muteBtn, pauseBtn);
+  // full-screen toggle: touch devices only (CSS), and only where the Fullscreen API exists (not iPhone Safari) and the page is not already an installed app
+  const FS_IN = '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const FS_OUT = '<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const fsBtn = canFullscreen() ? h('button', { class: 'iconbtn fsbtn', tabindex: '-1', html: FS_IN }) : null;
+  const fsSync = () => { if (!fsBtn) return; const on = isFullscreen(); fsBtn.innerHTML = on ? FS_OUT : FS_IN; const k = on ? 'hud.fullscreenExit' : 'hud.fullscreen'; fsBtn.setAttribute('title', t(k)); fsBtn.setAttribute('aria-label', t(k)); };
+  if (fsBtn) { tr.push(fsSync); fsSync(); }
+  topRight.append(rallyEl, ...(fsBtn ? [fsBtn] : []), legendBtn, muteBtn, pauseBtn);
 
   const el = h('div', { class: 'hud hidden' }, sb, topRight, refEl, bannerEl, toastEl, hintEl, chargeEl, legendEl);
   root.append(el);
 
-  const api = { el, pauseBtn, muteBtn, legendBtn };
+  const api = { el, pauseBtn, muteBtn, legendBtn, fsBtn, fsSync };
   let toastT = 0, bannerT = 0, hintLock = 0, lastHint = '', refT = 0;
   let toastSpec = null, bannerSpec = null, hintSpec = null;
   let cfgSig = '';

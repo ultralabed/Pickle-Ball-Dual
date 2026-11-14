@@ -3,15 +3,21 @@
 // the shell translates them at display time with playerName().
 
 const en = {
-  'app.title': 'Pickleball',
-  'app.sub': '3D · VS AI',
-  'app.desc': '3D pickleball: doubles or singles, traditional or rally scoring. Play a match against the AI.',
+  'app.title': 'Pickle Ball Dual',
+  'app.sub': '3D PICKLEBALL · VS AI',
+  // meta.title / meta.description (en) mirror the static <title> / meta description in index.html (dev/seo/site.mjs HOME_EN)
+  'meta.ogLocale': 'en_US', 'meta.ogLocaleAlt': 'zh_TW',
+  'meta.title': 'Pickle Ball Dual — Free 3D Pickleball Game in Your Browser',
+  'meta.description': 'Play Pickle Ball Dual, a free 3D pickleball game in your browser. Singles or doubles vs AI from DUPR 3.0 to 6.0, real rules, no install or sign-up.',
   'app.noWebgl': 'Could not start the 3D view (WebGL). Please use a recent Chrome / Safari with hardware acceleration enabled.',
-  'canvas.aria': 'Pickleball court',
+  'canvas.aria': 'Pickle Ball Dual: 3D pickleball court. Play with the keyboard.',
   'lang.label': '語言 / Language',
   'lang.toggleAria': 'Language',
 
-  'main.tag': 'Doubles, singles, rally scoring: play a real match against the AI',
+  'main.tag': 'A free 3D pickleball game in your browser. Play singles or doubles against AI at DUPR 3.0 to 6.0 with real rules. No install, no sign-up.',
+  'main.guide.aria': 'Guides and rules',
+  'main.guide.how': 'How to play', 'main.guide.rules': 'Rules', 'main.guide.faq': 'FAQ',
+  'guide.how.href': 'how-to-play/', 'guide.rules.href': 'rules/', 'guide.faq.href': 'faq/',   // relative to index.html; zh-TW points into zh-tw/
   'main.play': 'Play',
   'main.playSub': 'Choose opponent level and rules',
   'main.help': 'How to play',
@@ -144,15 +150,20 @@ const en = {
 };
 
 const zh = {
-  'app.title': '匹克球',
-  'app.sub': 'PICKLEBALL 3D',
-  'app.desc': '3D 匹克球：雙打、單打、傳統與 Rally 計分，和 AI 一起打一場。',
+  'app.title': 'Pickle Ball Dual',
+  'app.sub': '3D 匹克球 · 對戰 AI',
+  'meta.ogLocale': 'zh_TW', 'meta.ogLocaleAlt': 'en_US',
+  'meta.title': 'Pickle Ball Dual 匹克球：免費瀏覽器 3D 匹克球遊戲',
+  'meta.description': '免費的 3D 匹克球遊戲，開瀏覽器就能玩：單打、雙打對戰 DUPR 3.0 至 6.0 的 AI，採用真實規則，免下載、免註冊。',
   'app.noWebgl': '無法啟動 3D 畫面（WebGL）。請使用最新版 Chrome / Safari 並開啟硬體加速。',
-  'canvas.aria': '匹克球場',
+  'canvas.aria': 'Pickle Ball Dual 匹克球場：用鍵盤操作',
   'lang.label': '語言 / Language',
   'lang.toggleAria': '語言',
 
-  'main.tag': '雙打・單打・Rally — 和 AI 一起打一場真正的匹克球',
+  'main.tag': '免費的瀏覽器 3D 匹克球遊戲：單打、雙打對戰 DUPR 3.0 到 6.0 的 AI，採用真實規則，免下載、免註冊。',
+  'main.guide.aria': '遊戲指南與規則',
+  'main.guide.how': '操作說明', 'main.guide.rules': '規則', 'main.guide.faq': '常見問題',
+  'guide.how.href': 'zh-tw/how-to-play/', 'guide.rules.href': 'zh-tw/rules/', 'guide.faq.href': 'zh-tw/faq/',
   'main.play': '開始比賽',
   'main.playSub': '設定對手強度與規則',
   'main.help': '操作說明',
@@ -325,6 +336,16 @@ export function onLangChange(cb) { listeners.push(cb); return () => { const i = 
 export function applyStatic(root = document) {
   root.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
   root.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
-  const m = document.querySelector('meta[name="description"]');
-  if (m) m.setAttribute('content', t('app.desc'));
+  if (root !== document) return;
+  document.title = t('meta.title');
+  const set = (sel, attr, v) => { const e = document.querySelector(sel); if (e) e.setAttribute(attr, v); };
+  set('meta[name="description"]', 'content', t('meta.description'));
+  set('meta[property="og:title"]', 'content', t('meta.title'));
+  set('meta[property="og:description"]', 'content', t('meta.description'));
+  set('meta[property="og:locale"]', 'content', t('meta.ogLocale'));
+  set('meta[property="og:locale:alternate"]', 'content', t('meta.ogLocaleAlt'));
+  set('meta[name="twitter:title"]', 'content', t('meta.title'));
+  set('meta[name="twitter:description"]', 'content', t('meta.description'));
+  set('meta[name="apple-mobile-web-app-title"]', 'content', t('app.title'));
+  set('meta[name="application-name"]', 'content', t('app.title'));
 }

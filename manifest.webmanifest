@@ -1,0 +1,44 @@
+{
+  "id": "./",
+  "name": "Pickle Ball Dual: Free 3D Pickleball",
+  "short_name": "Pickle Ball Dual",
+  "description": "Play Pickle Ball Dual, a free 3D pickleball game in your browser. Singles or doubles vs AI from DUPR 3.0 to 6.0, real rules, no install or sign-up.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0b1a2c",
+  "theme_color": "#0b1a2c",
+  "categories": [
+    "games",
+    "sports"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

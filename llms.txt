@@ -1,0 +1,35 @@
+# Pickle Ball Dual
+
+> Pickle Ball Dual is a free 3D pickleball game that runs in a desktop web browser. You play singles or doubles against AI opponents at DUPR levels 3.0, 4.0, 5.0 and 6.0, with real pickleball rules. No install, no sign-up, no online multiplayer.
+
+## Key facts
+
+- Modes: doubles (you plus an AI partner vs two AI opponents) or singles (you vs one AI).
+- Scoring: traditional side-out scoring to 11 (win by 2, doubles start at 0-0-2, server 1 and server 2) or rally scoring to 15 (win by 2).
+- Rules implemented: diagonal serve, two-bounce rule, kitchen (non-volley zone, 7 ft / 2.13 m), faults, line calls (lines are in), around-the-post (ATP) shots.
+- Shots: drive (Space), drop (J), dink (K), lob (L), automatic smash on high balls, automatic ATP when pulled wide near the net.
+- Controls: WASD or arrow keys to move, A/D to aim, Esc to pause, M mute, H hide key hints, R skip replay. Keyboard only; no touch controls.
+- Extras: slow-motion instant replays of highlight points, English referee score calls, English and Traditional Chinese interface, Low/Medium/High graphics.
+- Court facts used in the game: 20 x 44 ft (6.10 x 13.41 m); net 36 in (0.914 m) at the posts, 34 in (0.864 m) at the centre.
+- Built with plain ES modules and three.js; no build step. Made by ultralabed.
+
+## Play
+
+- [Play Pickle Ball Dual](https://ultralabed.github.io/Pickle-Ball-Dual/): the game itself (full-screen WebGL canvas; needs a desktop browser and a keyboard)
+
+## Guides (English)
+
+- [How to play](https://ultralabed.github.io/Pickle-Ball-Dual/how-to-play/): controls, the six shots (drive, drop, dink, lob, smash, ATP), foot-ring timing colours, game modes, DUPR 3.0 to 6.0 AI levels
+- [Pickleball rules](https://ultralabed.github.io/Pickle-Ball-Dual/rules/): court size, serve, two-bounce rule, kitchen, faults, doubles 0-0-2 scoring, singles, rally scoring, and which rules the game simplifies
+- [FAQ](https://ultralabed.github.io/Pickle-Ball-Dual/faq/): 17 short answers (free to play, Mac, two-bounce rule, 0-0-2, dink, ATP, DUPR, scoring)
+
+## Guides (Traditional Chinese, 繁體中文)
+
+- [操作說明](https://ultralabed.github.io/Pickle-Ball-Dual/zh-tw/how-to-play/): Pickle Ball Dual 操作與攻略：W A S D 移動，Space、J、K、L 打出抽球、吊球、Dink、高吊球，腳下光圈出手時機與 DUPR 3.0–6.0 強度。
+- [匹克球規則](https://ultralabed.github.io/Pickle-Ball-Dual/zh-tw/rules/): 用 Pickle Ball Dual 的實作解說匹克球規則：球場尺寸、發球、兩跳規則、廚房區、犯規、雙打 0-0-2 計分、單打與 Rally 計分。
+- [常見問題](https://ultralabed.github.io/Pickle-Ball-Dual/zh-tw/faq/): Pickle Ball Dual 常見問題：是否免費、Mac 怎麼玩、兩跳規則、0-0-2、Dink、ATP、廚房區、DUPR 強度與計分方式。
+
+## Optional
+
+- [Source code on GitHub](https://github.com/ultralabed/pickle-ball-dual)
+- [Sitemap](https://ultralabed.github.io/Pickle-Ball-Dual/sitemap.xml)

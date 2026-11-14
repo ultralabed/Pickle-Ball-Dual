@@ -25,7 +25,9 @@ const DETAIL_KEYS = new Set(['kitchen', 'twoBounceRule', 'serveShort', 'serveWro
 // ------------------------------------------------------------------ setup
 const settings = loadSettings();
 // language: stored choice, else zh-* browsers get Traditional Chinese and everything else English
-setLang(isLang(settings.lang) ? settings.lang : detectLang(), { silent: true });
+// (a ?lang=en / ?lang=zh-TW link, used by the guide pages' "Play now" buttons, wins over both for this visit)
+const urlLang = (() => { try { const v = new URLSearchParams(location.search).get('lang') || ''; return /^zh/i.test(v) ? 'zh-TW' : /^en/i.test(v) ? 'en' : null; } catch (e) { return null; } })();
+setLang(urlLang || (isLang(settings.lang) ? settings.lang : detectLang()), { silent: true });
 applyStatic();
 const canvas = $('#game');
 const hud = createHud($('#hudroot'));
@@ -97,6 +99,9 @@ const menus = createMenus($('#screens'), {
   resume: () => resume(),
   restart: () => { startMatch(G.lastSettings || settings); },
 });
+
+// the static no-JS copy of the main menu (index.html #intro) has done its job: the live, translated menu replaces it
+document.getElementById('intro')?.remove();
 
 // ------------------------------------------------------------------ match construction
 function buildConfig(o) {

@@ -65,6 +65,8 @@ export function createMenus(root, cbIn) {
         btn(t('main.play'), 'primary', () => cb.openSetup(), t('main.playSub')),
         btn(t('main.help'), '', () => cb.openHelp('main')),
         btn(t('main.settings'), '', () => cb.openSettings('main'))),
+      h('nav', { class: 'guide-links', 'aria-label': t('main.guide.aria') },
+        ['how', 'rules', 'faq'].map((k) => h('a', { href: t(`guide.${k}.href`), text: t(`main.guide.${k}`) }))),
       h('div', { class: 'foot', text: t('main.foot') })),
   ]);
 

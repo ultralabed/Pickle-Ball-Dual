@@ -1,0 +1,30 @@
+# Pickle Ball Dual: everything public is welcome, including search and AI answer engines.
+# Note: crawlers only read /robots.txt at the host root; when the site lives under a sub-path (project pages),
+# keep a copy at the root of the host or rely on the sitemap and the meta robots tags.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
+Allow: /
+Disallow: /dev/
+Disallow: /tests/
+Disallow: /node_modules/
+Disallow: /Pickle-Ball-Dual/dev/
+Disallow: /Pickle-Ball-Dual/tests/
+Disallow: /Pickle-Ball-Dual/node_modules/
+
+User-agent: *
+Allow: /
+Disallow: /dev/
+Disallow: /tests/
+Disallow: /node_modules/
+Disallow: /Pickle-Ball-Dual/dev/
+Disallow: /Pickle-Ball-Dual/tests/
+Disallow: /Pickle-Ball-Dual/node_modules/
+
+Sitemap: https://ultralabed.github.io/Pickle-Ball-Dual/sitemap.xml

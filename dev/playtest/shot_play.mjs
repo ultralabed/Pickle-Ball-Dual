@@ -1,0 +1,12 @@
+import { launch, sleep, ROOT } from './lib.mjs';
+const w = +process.argv[2] || 1440, h = +process.argv[3] || 900, tag = process.argv[4] || 'play';
+const t = await launch({ width: w, height: h });
+const { page } = t;
+await page.evaluate(() => { __game.startMatch({ mode: 'doubles', scoring: 'sideout', opp: 4, mate: 4, handed: 'R', quality: 'high', seed: 7 }); });
+await sleep(800);
+await page.screenshot({ path: `${ROOT}/dev/shots/shell/_${tag}_serve.png` });
+await page.evaluate(() => { __game.setAutoplay(true); __game.advance(9, { until: (s) => s.phase === 'rally' && s.rally.hits >= 4 }); });
+await sleep(900);
+await page.screenshot({ path: `${ROOT}/dev/shots/shell/_${tag}_rally.png` });
+console.log(t.problems);
+await t.close();

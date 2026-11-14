@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pickleball view demo</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html,body{margin:0;height:100%;background:#0b1220;overflow:hidden;font:12px/1.35 system-ui,sans-serif;color:#e8eefc}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #ui{position:fixed;left:8px;top:8px;background:rgba(10,16,30,.72);backdrop-filter:blur(6px);padding:8px 10px;border-radius:10px;display:grid;grid-template-columns:auto auto;gap:4px 8px;align-items:center;max-width:330px}
+  #ui select,#ui input[type=range],#ui button{font:inherit;background:#1b2740;color:#e8eefc;border:1px solid #33456b;border-radius:6px;padding:2px 4px}
+  #ui button{cursor:pointer}
+  #ui .row{grid-column:1/3;display:flex;gap:4px;flex-wrap:wrap}
+  #stats{position:fixed;left:8px;bottom:8px;background:rgba(10,16,30,.6);padding:4px 8px;border-radius:8px;font-variant-numeric:tabular-nums}
+  body.hideui #ui{display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <label>mode</label><select id="mode"><option>rally</option><option>showcase</option><option>inspect</option></select>
+  <label>camera</label><select id="cam"><option>play</option><option>replay</option><option>menu</option><option>close</option></select>
+  <label>quality</label><select id="q"><option>high</option><option>medium</option><option>low</option></select>
+  <label>player</label><select id="player"><option>0</option><option>1</option><option>2</option><option>3</option></select>
+  <label>anim</label><select id="anim"></select>
+  <label>side</label><select id="side"><option>forehand</option><option>backhand</option></select>
+  <label>handed</label><select id="handed"><option>auto</option><option>R</option><option>L</option></select>
+  <label>emotion</label><select id="emo"><option>auto</option><option>neutral</option><option>happy</option><option>sad</option><option>focused</option></select>
+  <label>t (hold)</label><input id="t" type="range" min="0" max="1" step="0.01" value="0.18">
+  <label>cam az</label><input id="az" type="range" min="-180" max="180" step="5" value="35">
+  <div class="row"><label><input type="checkbox" id="hold"> hold t</label><label><input type="checkbox" id="pause"> pause</label><button id="hide">hide UI (H)</button></div>
+  <div class="row" style="opacity:.7">keys: 1 play · 2 replay · 3 menu · 4 close · H hide UI</div>
+</div>
+<div id="stats"></div>
+<script type="importmap">{"imports":{"three":"../vendor/three.module.js"}}</script>
+<script type="module">
+import { createView } from '../src/render/index.js';
+
+const $ = (id) => document.getElementById(id);
+const ANIMS = ['idle','ready','run','serveReady','serve','drive','drop','dink','lob','smash','volley','celebrate','dejected'];
+const DUR = { serve: 0.62, drive: 0.52, drop: 0.55, dink: 0.52, lob: 0.56, smash: 0.68, volley: 0.38 };
+const CONTACT = { serve: 0.2, drive: 0.18, drop: 0.19, dink: 0.18, lob: 0.18, smash: 0.2, volley: 0.13 };
+for (const a of ANIMS) { const o = document.createElement('option'); o.textContent = a; $('anim').appendChild(o); }
+$('anim').value = 'drive';
+
+// ------------------------------------------------------------------ URL params (for automated screenshots)
+const Q = new URLSearchParams(location.search);
+for (const k of ['mode', 'cam', 'q', 'player', 'anim', 'side', 'handed', 'emo']) if (Q.has(k)) $(k).value = Q.get(k);
+if (Q.has('t')) { $('t').value = Q.get('t'); $('hold').checked = true; }
+if (Q.has('az')) $('az').value = Q.get('az');
+if (Q.has('pause')) $('pause').checked = Q.get('pause') === '1';
+if (Q.has('noui')) document.body.classList.add('hideui');
+
+// ------------------------------------------------------------------ mock simulation (demo only — NOT the real sim)
+const G = 9.81;
+const NAMES = ['You', 'Mate', 'Opp A', 'Opp B'];
+const HANDS = ['R', 'R', 'R', 'L'];
+const HIT = { // anim -> {hy: contact height, z: |z| of hitter, land: |z| of landing, T1: flight time to bounce}
+  serve: { hy: 0.85, z: 6.95, land: 4.6, T1: 0.85 },
+  drive: { hy: 1.0, z: 6.2, land: 5.4, T1: 0.7 },
+  drop: { hy: 0.55, z: 5.0, land: 1.5, T1: 0.95 },
+  dink: { hy: 0.5, z: 2.9, land: 1.45, T1: 0.75 },
+  lob: { hy: 0.75, z: 3.4, land: 6.0, T1: 1.4 },
+  smash: { hy: 2.3, z: 3.6, land: 2.6, T1: 0.45 },
+  volley: { hy: 1.1, z: 2.2, land: 3.0, T1: 0.6 },
+};
+const PLANS = [
+  { end: 'smash', hits: [['serve','forehand'],['drive','forehand'],['drop','backhand'],['dink','forehand'],['dink','backhand'],['lob','forehand'],['smash','forehand']] },
+  { end: 'out',   hits: [['serve','forehand'],['drive','backhand'],['drive','forehand'],['drop','forehand'],['dink','backhand'],['drive','backhand']] },
+  { end: 'kitchen', hits: [['serve','forehand'],['drive','backhand'],['dink','forehand'],['dink','backhand'],['volley','forehand']] },
+];
+
+function makeMock() {
+  const m = { T: 0, tick: 0, rally: 0, phase: 'preServe', pStart: 0, events: [], sched: [], seg: null, plan: null, i: 0, hitsDone: 0, ballVis: true, ball: { pos: { x: 0, y: 1, z: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: { x: 0, y: 0, z: 0 }, visible: true, bounces: 0, lastHitBy: null, landing: null }, free: null, result: null, score: [0, 0] };
+  m.players = [0, 1, 2, 3].map((id) => ({
+    id, team: id < 2 ? 0 : 1, name: NAMES[id], handed: HANDS[id], dupr: 4, controller: id === 0 ? 'human' : 'ai',
+    pos: { x: 0, z: 0 }, vel: { x: 0, z: 0 }, facing: id < 2 ? 0 : Math.PI, anim: { name: 'ready', t: 0, side: 'forehand', shot: null },
+    isServer: false, isReceiver: false, emotion: 'neutral', swing: null, tgt: { x: 0, z: 0 }, aName: 'ready', aStart: 0,
+  }));
+  startRally(m);
+  m.players.forEach((p) => { p.pos.x = p.tgt.x; p.pos.z = p.tgt.z; });
+  return m;
+}
+function emit(m, e) { m.events.push({ tick: m.tick, ...e }); }
+function startRally(m) {
+  m.plan = PLANS[m.rally % PLANS.length]; m.i = 0; m.hitsDone = 0; m.phase = 'preServe'; m.pStart = m.T; m.free = null; m.result = null;
+  m.ball.visible = true; m.ball.bounces = 0; m.ball.landing = null; m.seg = null; m.sched = [];
+  const st = m.rally % 2, mem = (m.rally >> 1) & 1;
+  const sid = st * 2 + mem; m.server = sid;
+  const sx = (m.rally % 2 ? -1 : 1) * 1.6; m.serveX = sx;
+  for (const p of m.players) {
+    p.isServer = p.id === sid; p.isReceiver = false;
+    p.emotion = 'neutral'; p.swing = null;
+    const side = p.team === 0 ? 1 : -1;
+    if (p.id === sid) { p.tgt = { x: sx * side, z: side * 7.1 }; }
+    else if (p.team === st) { p.tgt = { x: -sx * side * 1.2, z: side * 2.9 }; }   // partner at kitchen line
+    else if (p.id === (1 - st) * 2 + mem) { p.tgt = { x: sx * side * -1 * 0 - 1.6 * side * Math.sign(sx) * -1, z: side * 6.6 }; p.isReceiver = true; }
+    else { p.tgt = { x: 1.4 * side * Math.sign(sx), z: side * 3.2 }; }
+  }
+  m.nextHitT = m.T + 2.4;       // serve contact
+  m.hitter = sid;
+  m.pendingHit = true;
+  // schedule serve swing
+  const sp = m.players[sid]; sp.swing = { name: 'serve', side: 'forehand', start: m.nextHitT - CONTACT.serve };
+}
+function hitterFor(m, i) {
+  const t = ((m.rally % 2) + i) % 2, mem = ((i >> 1) + m.rally) & 1;
+  return t * 2 + mem;
+}
+function doHit(m) {
+  const i = m.i, [anim, side] = m.plan.hits[i];
+  const hid = hitterFor(m, i), p = m.players[hid], h = HIT[anim];
+  const sgn = p.team === 0 ? 1 : -1;
+  const p0 = { x: p.pos.x + (p.handed === 'L' ? -0.35 : 0.35), y: h.hy, z: p.pos.z - sgn * 0.45 };
+  m.ball.lastHitBy = hid; m.ball.bounces = 0; m.hitsDone++;
+  const last = i === m.plan.hits.length - 1;
+  const seg = { t0: m.T, p0, anim, last, noBounce: false };
+  // landing
+  const lx = [0.9, -1.4, 1.8, -0.6, 1.2, -1.7, 0.5][(i + m.rally * 3) % 7];
+  let land = { x: lx, z: -sgn * h.land };
+  if (last && m.plan.end === 'out') land = { x: 3.9, z: -sgn * 7.4 };
+  seg.L = land; seg.T1 = h.T1;
+  if (last && m.plan.end === 'kitchen') { seg.fault = true; }
+  if (!last) {
+    const [na, ns] = m.plan.hits[i + 1];
+    const nh = HIT[na], nid = hitterFor(m, i + 1), nsgn = nid < 2 ? 1 : -1;
+    const p1 = { x: clampX(land.x + (ns === 'backhand' ? 0.4 : -0.4)), y: nh.hy, z: nsgn * nh.z };
+    if (na === 'volley') { seg.noBounce = true; p1.z = nsgn * nh.z; }
+    seg.p1 = { ...p1 };
+    seg.T2 = anim === 'lob' ? 0.95 : (anim === 'dink' ? 0.7 : 0.62);
+    if (seg.noBounce) { seg.T1 = Math.max(0.8, h.T1 + 0.2); seg.T2 = 0; }
+    seg.next = { id: nid, anim: na, side: ns };
+    seg.tNext = m.T + seg.T1 + seg.T2;
+    const np = m.players[nid];
+    np.tgt = { x: p1.x - (np.handed === 'L' ? -0.35 : 0.35) * 0 + (ns === 'forehand' ? -0.3 : 0.3) * (np.handed === 'L' ? -1 : 1), z: p1.z + nsgn * 0.45 };
+    np.swing = { name: na, side: ns, start: seg.tNext - CONTACT[na] };
+    // partner repositions
+    const partner = m.players[nid ^ 1]; partner.tgt = { x: -np.tgt.x * 0.8 - Math.sign(np.tgt.x) * 0.3, z: nsgn * 3.0 };
+    // hitter backs off
+    p.tgt = { x: clampX(p.pos.x * 0.7), z: sgn * Math.max(3.0, Math.min(6.6, Math.abs(p.pos.z) + (anim === 'dink' || anim === 'volley' ? 0 : 0.6))) };
+  } else {
+    seg.T2 = 0;
+    m.sched.push({ t: m.T + seg.T1, fn: () => finish(m, seg, hid) });
+    p.tgt = { x: p.pos.x * 0.8, z: sgn * Math.max(Math.abs(p.pos.z), 3.2) };
+  }
+  m.seg = seg;
+  const sp = speedOf(seg);
+  emit(m, { type: 'hit', playerId: hid, shot: anim, side, power: anim === 'smash' ? 0.95 : anim === 'drive' ? 0.75 : 0.4, atp: false, isVolley: anim === 'volley', isServe: anim === 'serve', pos: { ...p0 }, speed: sp });
+  m.phase = 'rally'; p.swingDone = m.T; m.i++;
+  if (!seg.noBounce) m.sched.push({ t: m.T + seg.T1, fn: () => { m.ball.bounces = 1; emit(m, { type: 'bounce', pos: { x: seg.L.x, z: seg.L.z }, inBounds: !(last && m.plan.end === 'out'), speed: 6 }); } });
+  if (seg.fault) {
+    m.sched.push({ t: m.T + 0.08, fn: () => finish(m, seg, hid, 'kitchen') });
+  }
+}
+const clampX = (x) => Math.max(-2.7, Math.min(2.7, x));
+function speedOf(seg) { const dt = seg.T1; return Math.hypot((seg.L.x - seg.p0.x) / dt, (seg.L.z - seg.p0.z) / dt, 4); }
+function finish(m, seg, hid, reason) {
+  const team = m.players[hid].team;
+  m.phase = 'pointOver'; m.pStart = m.T;
+  m.result = { winner: reason ? 1 - team : (m.plan.end === 'out' ? 1 - team : team) };
+  if (reason === 'kitchen') emit(m, { type: 'fault', reason: 'kitchen', team, playerId: hid });
+  else if (m.plan.end === 'out') emit(m, { type: 'fault', reason: 'out', team, playerId: hid });
+  emit(m, { type: 'rallyEnd', winnerTeam: m.result.winner, reason: reason || m.plan.end, hits: m.hitsDone, pointScored: true, sideOut: false, secondServer: false, highlight: m.plan.end === 'smash', highlightReason: m.plan.end === 'smash' ? 'smash' : null });
+  m.score[m.result.winner]++;
+  for (const p of m.players) p.emotion = p.team === m.result.winner ? 'happy' : 'sad';
+  if (!reason) { // ball continues free
+    m.free = { t0: m.T, pos: { ...m.ball.pos }, vel: { ...m.ball.vel } };
+  } else m.free = { t0: m.T, pos: { ...m.ball.pos }, vel: { ...m.ball.vel } };
+}
+
+function ballAt(m) {
+  const b = m.ball, s = m.seg;
+  if (m.phase === 'preServe') {
+    const sp = m.players[m.server]; const sg = sp.team === 0 ? 1 : -1;
+    b.pos = { x: sp.pos.x + (sp.handed === 'L' ? 0.3 : -0.3), y: 0.95, z: sp.pos.z - sg * 0.5 }; b.vel = { x: 0, y: 0, z: 0 }; b.visible = true; b.landing = null; return;
+  }
+  if (m.free) {
+    const f = m.free, dt = m.T - f.t0; // simple ballistic with ground bounces
+    let { x, y, z } = f.pos, vx = f.vel.x, vy = f.vel.y, vz = f.vel.z;
+    const steps = Math.ceil(dt / 0.005); const h = steps ? dt / steps : 0;
+    // integrate from scratch each frame (deterministic, cheap)
+    for (let k = 0; k < steps; k++) { vy -= G * h; x += vx * h; y += vy * h; z += vz * h; if (y < 0.037) { y = 0.037; vy = -vy * 0.6; vx *= 0.8; vz *= 0.8; } }
+    b.pos = { x, y, z }; b.vel = { x: vx, y: vy, z: vz }; b.visible = dt < 1.6; b.landing = null; return;
+  }
+  if (!s) return;
+  const dt = m.T - s.t0; let x, y, z, vx, vy, vz;
+  const arc = (a, bb, T, y1, tt) => { // a -> bb with ground-free arc, y(0)=a.y y(T)=y1
+    const vy0 = (y1 - a.y + 0.5 * G * T * T) / T; const u = tt / T;
+    return { x: a.x + (bb.x - a.x) * u, y: a.y + vy0 * tt - 0.5 * G * tt * tt, z: a.z + (bb.z - a.z) * u, vx: (bb.x - a.x) / T, vy: vy0 - G * tt, vz: (bb.z - a.z) / T };
+  };
+  if (s.noBounce) { const r = arc(s.p0, s.p1, s.T1, s.p1.y, Math.min(dt, s.T1)); ({ x, y, z, vx, vy, vz } = r); }
+  else if (dt < s.T1) { const r = arc(s.p0, s.L, s.T1, 0.037, dt); ({ x, y, z, vx, vy, vz } = r); b.landing = { x: s.L.x, z: s.L.z, t: s.t0 + s.T1 }; }
+  else if (s.p1 && s.T2) { const r = arc({ x: s.L.x, y: 0.037, z: s.L.z }, s.p1, s.T2, s.p1.y, Math.min(dt - s.T1, s.T2)); ({ x, y, z, vx, vy, vz } = r); b.landing = null; }
+  else { x = s.L.x; y = 0.037; z = s.L.z; vx = vy = vz = 0; }
+  if (dt >= s.T1 || s.noBounce) b.landing = null;
+  if (s.fault && dt > 0.1) { /* ball hangs where it is */ }
+  b.pos = { x, y, z }; b.vel = { x: vx, y: vy, z: vz }; b.spin = { x: -vz * 4, y: 0, z: vx * 4 };
+  if (m.ball.landing === null && dt < s.T1 && !s.noBounce) b.landing = { x: s.L.x, z: s.L.z, t: s.t0 + s.T1 };
+}
+
+function stepMock(m, dt) {
+  m.T += dt; m.tick++;
+  // scheduled events
+  for (let k = m.sched.length - 1; k >= 0; k--) if (m.T >= m.sched[k].t) { const f = m.sched[k]; m.sched.splice(k, 1); f.fn(); }
+  if ((m.phase === 'preServe' || m.phase === 'rally') && m.nextHitT !== null && m.T >= m.nextHitT) {
+    if (m.pendingHit) { m.pendingHit = false; doHit(m); m.nextHitT = m.seg.next ? m.seg.tNext : null; m.pendingHit = !!m.seg.next; }
+  }
+  if (m.phase === 'pointOver' && m.T - m.pStart > 3.0) { m.rally++; startRally(m); }
+  if (m.phase === 'preServe' && m.T - m.pStart < 0.01) { /* nothing */ }
+  // player movement
+  for (const p of m.players) {
+    const dx = p.tgt.x - p.pos.x, dz = p.tgt.z - p.pos.z, d = Math.hypot(dx, dz);
+    const frozen = m.phase === 'pointOver' && m.T - m.pStart < 2.2;
+    let sp = frozen ? 0 : Math.min(5.2, d * 3.2);
+    if (d < 0.03) sp = 0;
+    const vx = d > 1e-4 ? dx / d * sp : 0, vz = d > 1e-4 ? dz / d * sp : 0;
+    p.vel.x += (vx - p.vel.x) * Math.min(1, dt * 14); p.vel.z += (vz - p.vel.z) * Math.min(1, dt * 14);
+    p.pos.x += p.vel.x * dt; p.pos.z += p.vel.z * dt;
+    const base = p.team === 0 ? 0 : Math.PI;
+    const bx = m.ball.pos.x - p.pos.x;
+    let tf = base + Math.max(-0.6, Math.min(0.6, bx * 0.12)) * (p.team === 0 ? -1 : 1);
+    if (p.swing && m.T > p.swing.start && m.T < p.swing.start + DUR[p.swing.name]) tf = base + (p.swing.side === 'forehand' ? 0.35 : -0.35) * (p.handed === 'L' ? 1 : -1) * (p.team === 0 ? 1 : -1) * 0.5;
+    let df = tf - p.facing; df = Math.atan2(Math.sin(df), Math.cos(df)); p.facing += df * Math.min(1, dt * 10);
+    // anim selection
+    let name, t, side = 'forehand';
+    if (p.swing && m.T >= p.swing.start && m.T < p.swing.start + DUR[p.swing.name]) { name = p.swing.name; t = m.T - p.swing.start; side = p.swing.side; }
+    else if (m.phase === 'pointOver' && m.T - m.pStart > 0.25) { name = p.team === m.result.winner ? 'celebrate' : 'dejected'; }
+    else if (m.phase === 'preServe') name = p.id === m.server ? 'serveReady' : 'ready';
+    else name = Math.hypot(p.vel.x, p.vel.z) > 1.0 ? 'run' : 'ready';
+    if (name !== p.aName) { p.aName = name; p.aStart = m.T - (t || 0); }
+    p.anim = { name, t: t != null ? t : m.T - p.aStart, side, shot: name };
+    if (m.phase === 'rally' && p.emotion === 'neutral') p.emotion = 'focused';
+  }
+  ballAt(m);
+}
+function toState(m) {
+  return {
+    tick: m.tick, time: m.T, phase: m.phase, phaseTime: m.T - m.pStart, config: {},
+    ball: m.ball, players: m.players.map((p) => ({ id: p.id, team: p.team, name: p.name, handed: p.handed, dupr: p.dupr, controller: p.controller, pos: { ...p.pos }, vel: { ...p.vel }, facing: p.facing, anim: { ...p.anim }, isServer: p.isServer, isReceiver: p.isReceiver, emotion: p.emotion })),
+    score: { points: m.score, servingTeam: 0, serverId: m.server, receiverId: 2, serverNumber: 1, callText: '0 - 0 - 2', gamePoint: false, winner: null },
+    rally: { hits: m.hitsDone, lastShot: null, twoBounceRemaining: 0 },
+  };
+}
+
+// ------------------------------------------------------------------ demo driver
+const canvas = $('c');
+const view = createView(canvas, { quality: $('q').value, preserveDrawingBuffer: true });
+const cfg = { mode: 'doubles', players: [0, 1, 2, 3].map((id) => ({ id, team: id < 2 ? 0 : 1, controller: id === 0 ? 'human' : 'ai', handed: HANDS[id], name: NAMES[id], dupr: 4 })) };
+view.setup(cfg);
+let mock = makeMock();
+if (Q.has('at')) { const at = +Q.get('at'); while (mock.T < at) stepMock(mock, 1 / 120); mock.events = []; }
+let tAcc = 0, last = performance.now(), frames = [];
+let showcaseHand = 0;
+
+const SHOW = [['ready','forehand'],['run','forehand'],['serveReady','forehand'],['serve','forehand'],['drive','forehand'],['drive','backhand'],['drop','forehand'],['dink','backhand'],['lob','forehand'],['smash','forehand'],['volley','backhand'],['celebrate','forehand'],['dejected','forehand']];
+const EMOS = ['neutral', 'focused', 'happy', 'sad'];
+
+function inspectState(T) {
+  const st = toState(mock);
+  const pi = +$('player').value, hand = $('handed').value;
+  const name = $('anim').value, side = $('side').value;
+  const hold = $('hold').checked;
+  const dur = (DUR[name] || 1.6) + 0.5;
+  const t = hold ? +$('t').value : (T % dur);
+  // park others, place subject
+  st.players.forEach((p, i) => {
+    p.vel = { x: 0, z: 0 };
+    p.anim = { name: 'ready', t: T, side: 'forehand', shot: null };
+    p.pos = { x: [-6.5, 6.5, -6.5, 6.5][i], z: [8, 4, -8, -4][i] }; p.facing = i < 2 ? 0 : Math.PI;
+  });
+  const p = st.players[pi];
+  const sgn = p.team === 0 ? 1 : -1;
+  p.pos = { x: 0, z: sgn * 4.4 }; p.facing = p.team === 0 ? 0 : Math.PI;
+  if (hand !== 'auto') p.handed = hand;
+  p.anim = { name, t, side, shot: name };
+  let vel = 0; if (name === 'run') vel = 4.2;
+  const fv = { x: Math.sin(p.facing), z: -Math.cos(p.facing) }, rv = { x: Math.cos(p.facing), z: Math.sin(p.facing) };
+  if (name === 'run') p.vel = { x: fv.x * vel, z: fv.z * vel };
+  if (name === 'run') { /* keep stationary position, only leg cycle */ }
+  const emo = $('emo').value; if (emo !== 'auto') p.emotion = emo; else p.emotion = name === 'celebrate' ? 'happy' : name === 'dejected' ? 'sad' : 'focused';
+  const hs = (p.handed === 'L' ? -1 : 1) * (side === 'forehand' ? 1 : -1);
+  st.ball = { ...st.ball, visible: true, pos: { x: p.pos.x + fv.x * 0.9 + rv.x * (Q.has('bo') ? +Q.get('bo') : 0.55) * hs, y: name === 'smash' ? 2.2 : 0.9, z: p.pos.z + fv.z * 0.9 + rv.z * (Q.has('bo') ? +Q.get('bo') : 0.55) * hs }, vel: { x: 0, y: 0, z: 0 }, landing: null };
+  return { st, p };
+}
+function showcaseState(T) {
+  const st = toState(mock);
+  const cyc = Math.floor(T / (SHOW.length * 1.7));
+  st.players.forEach((p, i) => {
+    const k = Math.floor(T / 1.7) + i * 3;
+    const [name, side] = SHOW[k % SHOW.length];
+    const tt = T % 1.7;
+    p.pos = { x: [-1.5, 1.5, -1.5, 1.5][i], z: [4.6, 3.6, -3.6, -4.6][i] };
+    p.facing = i < 2 ? 0 : Math.PI;
+    p.vel = name === 'run' ? { x: Math.sin(p.facing) * 4, z: -Math.cos(p.facing) * 4 } : { x: 0, z: 0 };
+    p.anim = { name, t: tt, side, shot: name };
+    p.emotion = EMOS[(k + cyc) % 4];
+    p.handed = ((cyc + i) % 2) ? HANDS[i] === 'R' ? 'L' : 'R' : HANDS[i];
+  });
+  st.ball = { ...st.ball, visible: true, pos: { x: Math.sin(T) * 2, y: 1.2 + Math.abs(Math.sin(T * 2)), z: Math.cos(T * 0.7) * 3 }, vel: { x: 0, y: 0, z: 0 }, landing: null };
+  return st;
+}
+
+let handKey = '';
+function setCloseCam(p) {
+  const f = p.facing, az = (+$('az').value) * Math.PI / 180, d = Q.has('d') ? +Q.get('d') : 4.4;
+  const ang = f + az;
+  const ty = Q.has('ty') ? +Q.get('ty') : 1.05; const tgt = [p.pos.x, ty, p.pos.z];
+  view.setCameraOverride({ position: [p.pos.x + Math.sin(ang) * d, ty + (Q.has('ty') ? 0.1 : 0.55), p.pos.z - Math.cos(ang) * d], target: tgt, fov: Q.has('fov') ? +Q.get('fov') : 38 });
+}
+
+let camSel = '';
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  frames.push(dt * 1000); if (frames.length > 240) frames.shift();
+  const mode = $('mode').value, paused = $('pause').checked;
+  if (view.__q !== $('q').value) { view.__q = $('q').value; view.setQuality($('q').value); }
+  if (!paused) {
+    tAcc += dt;
+    while (tAcc >= 1 / 120) { tAcc -= 1 / 120; if (mode === 'rally') stepMock(mock, 1 / 120); else { mock.T += 1 / 120; } }
+  }
+  let state, subject = null;
+  if (mode === 'inspect') { const r = inspectState(mock.T); state = r.st; subject = r.p; }
+  else if (mode === 'showcase') state = showcaseState(mock.T);
+  else state = toState(mock);
+  // handedness changes require rebuilding the rigs (setup)
+  const hk = state.players.map((p) => p.handed).join('');
+  if (hk !== handKey) { handKey = hk; view.setup({ players: state.players }); }
+  const cam = $('cam').value;
+  if (cam !== camSel) { camSel = cam; if (cam !== 'close') { view.setCameraOverride(null); view.setCamera(cam); } }
+  if (cam === 'close') setCloseCam(subject || state.players[+$('player').value]);
+  view.update(state, paused ? 0 : dt, { replay: cam === 'replay' });
+  if (mode === 'rally' && mock.events.length) { view.onEvents(mock.events); mock.events = []; }
+  view.render();
+  if ((now | 0) % 8 === 0) {
+    const avg = frames.reduce((a, b) => a + b, 0) / frames.length, mx = Math.max(...frames);
+    $('stats').textContent = `frame ${avg.toFixed(1)} ms avg / ${mx.toFixed(1)} max · ${(1000 / avg).toFixed(0)} fps · ${view.renderer.info.render.calls} calls · ${(view.renderer.info.render.triangles / 1000).toFixed(0)}k tris`;
+  }
+}
+requestAnimationFrame(frame);
+window.addEventListener('resize', () => view.resize());
+new ResizeObserver(() => view.resize()).observe(canvas);
+window.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  const k = e.key;
+  if (k === '1') { $('cam').value = 'play'; } else if (k === '2') { $('cam').value = 'replay'; } else if (k === '3') { $('cam').value = 'menu'; } else if (k === '4') { $('cam').value = 'close'; }
+  else if (k.toLowerCase() === 'h') document.body.classList.toggle('hideui');
+});
+$('hide').onclick = () => document.body.classList.add('hideui');
+window.__demo = { view, mock: () => mock, frames: () => frames.slice(), avg: () => frames.reduce((a, b) => a + b, 0) / Math.max(1, frames.length), ready: true };
+</script>
+</body>
+</html>

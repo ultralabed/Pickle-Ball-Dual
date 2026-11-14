@@ -40,7 +40,7 @@ export function installPageGuards() {
     if (e.cancelable) e.preventDefault();
   }, { passive: false });
   for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });   // iOS pinch
-  document.addEventListener('contextmenu', (e) => { if (!(e.target && e.target.closest && e.target.closest('a[href]'))) e.preventDefault(); });
+  document.addEventListener('contextmenu', (e) => { if (document.body.classList.contains('touch-ui') && !(e.target && e.target.closest && e.target.closest('a[href]'))) e.preventDefault(); });
   document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
 }
 

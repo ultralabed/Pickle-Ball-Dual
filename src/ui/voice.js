@@ -68,6 +68,7 @@ export function createVoice() {
       if (!synth.speaking && !synth.pending) {
         const u = new SpeechSynthesisUtterance(' ');
         u.volume = 0; u.lang = 'en-US';
+        u.onend = u.onerror = () => setTimeout(pump, 30);   // otherwise a call queued behind it would wait for the next say()
         synth.speak(u);
       }
       synth.resume();

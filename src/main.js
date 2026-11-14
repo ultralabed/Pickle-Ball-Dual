@@ -229,7 +229,7 @@ document.addEventListener('visibilitychange', () => {
 });
 // any key / pointer press wakes a suspended / interrupted AudioContext (not only menu clicks)
 // (iOS Safari only unlocks WebAudio / speechSynthesis from touchend / pointerup / click, never from touchstart / pointerdown)
-const unlockMedia = () => { audio.unlock(); voice.unlock(); };
+const unlockMedia = (e) => { audio.unlock(); if (!e || e.type !== 'pointerdown') voice.unlock(); };   // iOS refuses speech from pointerdown
 for (const ev of ['keydown', 'pointerdown', 'pointerup', 'touchend', 'click']) window.addEventListener(ev, unlockMedia, { capture: true, passive: true });
 window.addEventListener('blur', () => pause());
 window.addEventListener('pagehide', () => { input.releaseAll(); pause(); });
@@ -546,7 +546,8 @@ function syncModeText() {
 onUIModeChange(() => {
   input.releaseAll();                 // never carry held keys / fingers over to the other input type
   syncModeText();
-  menus.relang(settings);             // main footer, help (touch list vs key table), pause footer, settings rows
+  // Deferred: rebuilding the menus right now would remove the button under the finger / mouse before its click arrives.
+  setTimeout(() => menus.relang(settings), 350);   // main footer, help (touch list vs key table), pause footer, settings rows
   hud.relang(G.sim ? G.sim.state : null);
 });
 syncModeText();

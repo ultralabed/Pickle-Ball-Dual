@@ -21,7 +21,7 @@ export function createWakeLock() {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) acquire(); });
   return {
     supported,
-    /** true while a match is on (play / replay / pause screens all keep the screen awake) */
+    /** true while a match is on (play / replay; the shell turns it off on the pause screen) */
     set(on) { want = !!on; if (want) acquire(); else drop(); },
     get active() { return !!sentinel; },
   };

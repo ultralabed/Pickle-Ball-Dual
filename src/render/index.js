@@ -175,8 +175,10 @@ export function createView(canvas, opts = {}) {
       wantTarget.set(bxs * 0.5, 0.9, bzs * 0.85);
       const ang = 0.18 * Math.sin(t * 0.35);
       wantPos.set(side * (7.4 + Math.cos(ang) * 0.5), 2.6 + 0.5 * Math.sin(t * 0.3), bzs * 0.55 + 4.8 * Math.sin(ang) + 1.5);
-      if (pp > 0) { const k = 1 + 0.7 * pp; wantPos.x *= k; wantPos.z = wantTarget.z + (wantPos.z - wantTarget.z) * k; wantPos.y += 1.5 * pp; }
-      fov = fovFor(46, pp, 0.34);
+      // Portrait: do NOT pull the camera outward (it would end up behind the side stand and show nothing); raise it a little and
+      // let the narrow view follow the ball instead.
+      if (pp > 0) { wantPos.y += 0.9 * pp; wantTarget.y += 0.2 * pp; }
+      fov = fovFor(46, pp, 0.42);
     } else { // menu
       const a = clockT * 0.11 + 0.6;
       wantPos.set(Math.sin(a) * 15.5, 9.2 + Math.sin(clockT * 0.17) * 0.8, Math.cos(a) * 15.5);

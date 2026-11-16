@@ -229,7 +229,7 @@ document.addEventListener('visibilitychange', () => {
 });
 // any key / pointer press wakes a suspended / interrupted AudioContext (not only menu clicks)
 // (iOS Safari only unlocks WebAudio / speechSynthesis from touchend / pointerup / click, never from touchstart / pointerdown)
-const unlockMedia = (e) => { audio.unlock(); if (!e || e.type !== 'pointerdown') voice.unlock(); };   // iOS refuses speech from pointerdown
+const unlockMedia = (e) => { audio.unlock(e && e.type); if (!e || e.type !== 'pointerdown') voice.unlock(); };   // iOS refuses speech from pointerdown
 for (const ev of ['keydown', 'pointerdown', 'pointerup', 'touchend', 'click']) window.addEventListener(ev, unlockMedia, { capture: true, passive: true });
 window.addEventListener('blur', () => pause());
 window.addEventListener('pagehide', () => { input.releaseAll(); pause(); });

@@ -60,25 +60,50 @@ export function createAudio() {
   // iOS Safari only lets a context start from touchend / click (not touchstart / pointerdown), so main.js calls this from all of them;
   // the first successful call also plays a 1-sample silent buffer (the classic unlock) and asks iOS 17+ to use the "playback" audio
   // session so the ringer switch does not mute the game.
-  let primed = false;
+  // iOS: the hardware ringer switch mutes WebAudio unless the page is in the "playback" audio session. iOS 17+ has an API for it;
+  // older iOS only switches when an HTML <audio> element is playing, so we loop a silent one there.
+  const setSession = () => { try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ } };
+  let silentEl = null;
+  function silentWavUrl() {
+    const n = 4000, buf = new ArrayBuffer(44 + n), v = new DataView(buf);   // 0.5 s of 8 kHz 8-bit mono silence
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, 'RIFF'); v.setUint32(4, 36 + n, true); str(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, 'data'); v.setUint32(40, n, true);
+    new Uint8Array(buf, 44).fill(128);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  }
+  const isIOS = typeof navigator !== 'undefined' && (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+  function keepAlive(on) {
+    if (!isIOS || navigator.audioSession) return;
+    try {
+      if (on) {
+        if (!silentEl) { silentEl = new Audio(silentWavUrl()); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.preload = 'auto'; }
+        if (silentEl.paused) { const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => {}); }
+      } else if (silentEl && !silentEl.paused) silentEl.pause();
+    } catch (e) { /* ignore */ }
+  }
   function prime() {
-    if (primed || !ctx) return;
-    primed = true;
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ }
+    if (!ctx) return;
+    setSession();
     try { const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch (e) { /* ignore */ }
   }
-  api.unlock = () => {
+  // evType: the DOM event that triggered the call. pointerdown / touchstart are not accepted by iOS as a gesture for audio, and a
+  // context created there can stay stuck, so we wait for the touchend / click / keydown that follows.
+  api.unlock = (evType) => {
     try {
+      if (evType === 'pointerdown' || evType === 'touchstart') { if (!ctx) return; }
+      setSession();
       if (!ensure()) return;
-      if (!hold && needsResume()) ctx.resume().catch(() => {});
-      prime(); startCrowd();
+      if (!hold) keepAlive(true);
+      if (!hold && needsResume()) { ctx.resume().catch(() => {}); prime(); }
+      startCrowd();
     } catch (e) { /* audio must never break input handling */ }
   };
   /** Crowd bed on/off (off while the pause screen is up). */
   api.setCrowd = (on) => { crowdOn = !!on; if (crowdGain) crowdGain.gain.setTargetAtTime(crowdOn ? 1 : 0, ctx.currentTime, 0.12); };
   api.setMuted = (m) => { muted = !!m; if (master) master.gain.setTargetAtTime(muted ? 0 : volume, ctx.currentTime, 0.02); };
   api.setVolume = (v) => { volume = v; if (master && !muted) master.gain.setTargetAtTime(volume, ctx.currentTime, 0.02); };
-  api.suspend = () => { hold = true; if (ctx && ctx.state === 'running') ctx.suspend().catch(() => {}); };
+  api.suspend = () => { hold = true; keepAlive(false); if (ctx && ctx.state === 'running') ctx.suspend().catch(() => {}); };
   api.resume = () => { hold = false; if (needsResume()) ctx.resume().catch(() => {}); };
 
   api.pop = (power = 0.5, x = 0, smash = false) => {

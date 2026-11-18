@@ -221,7 +221,7 @@ export function createView(canvas, opts = {}) {
   const _pt = new THREE.Vector3(), _look = new THREE.Vector3();
   const _hd = new THREE.Vector3(), _ft = new THREE.Vector3(), _sd = new THREE.Vector3(), _c0 = new THREE.Vector3(), _bp = new THREE.Vector3();
   const view = {
-    renderer, scene, camera, _players: players,
+    renderer, scene, camera, court, fx, _players: players,   // court / fx are used by the daily challenge shell
     setup(cfg) {
       config = cfg;
       if (cfg && cfg.players) ensurePlayers(cfg.players.map((p) => ({ ...p })));

@@ -44,6 +44,29 @@ Phones and tablets get on-screen touch controls automatically (landscape and por
 
 The touch overlay follows the last input type used: it shows when the primary pointer is coarse or after a touch, and hides again as soon as a key or mouse is used (`?controls=touch` / `?controls=keys` pins it). First-run graphics default to Low on phones, Medium on tablets and High on desktop. Add the page to your home screen for a full-screen game (`manifest.webmanifest`, `display: standalone`).
 
+## Daily Pickleball Challenge (每日匹克球挑戰)
+
+A second, one-minute game mode on the same 3D court: `daily/` (open `http://localhost:8000/daily/`).
+
+- Five skill shots a day, picked from 20 challenge types by the local date (day #1 = 2026-11-18), the same five for everyone, no server.
+- Pull back and release to hit (touch or mouse); up to 3 balls per shot, best ball counts, 0 to 100 points by distance to the target, total out of 500.
+- Result with an emoji row and a copyable share text; progress is saved after every ball, so a reload cannot retry. Streak and best score are kept.
+- "All challenges" (☰) lets you practise any of the 20 directly. Practice never changes the daily result. `daily/?practice=<id>` opens one directly.
+
+| File | What it is |
+|---|---|
+| `src/daily/challenges.js` | **The content.** The 20 challenge types as data: id, zh/en name and instruction, parameter generator, scoring rule. Add an entry to add a challenge. |
+| `src/daily/engine.js` | Pure engine: ball flight (the game's own integrator plus wind, defenders, bucket), scoring helpers, and the solver that rerolls any setup a perfect player cannot score 95 on (or whose perfect shot is a knife edge). |
+| `src/daily/day.js` | Which five a date gets, save format, share text. `SHARE_URL` is the one constant for the shared link. |
+| `src/daily/main.js`, `props.js`, `daily.css` | Shell, 3D props (targets, defender reach, bucket, aim preview), styles. Reuses `src/render`, `src/ui/audio.js`, `src/ui/i18n.js` (`daily.*` keys), `src/ui/store.js`. |
+
+```sh
+node --test tests/daily.test.mjs          # content + solver tests (part of npm test)
+node dev/daily/solve-all.mjs 200          # solver sweep: every type over 200 seeds
+node dev/daily/playtest.mjs --shots=/tmp/daily-shots   # Playwright: all 20 in practice + a full day, phone size, real drags
+node dev/daily/bundle.mjs out.html        # one self-contained HTML file (needs npx esbuild)
+```
+
 ## Run locally
 
 ```sh
@@ -55,7 +78,7 @@ Any static server works. Every URL in the site is relative, so it also works und
 ## Tests
 
 ```sh
-npm test                         # 58 simulation tests (node --test)
+npm test                         # simulation tests + daily challenge tests (node --test)
 node dev/playtest/menus.mjs      # Playwright UI playtests (need Playwright + Chromium)
 node dev/playtest/i18n.mjs
 node dev/playtest/touch.mjs [--shots]   # phone / tablet emulation with real multi-touch events (CDP)

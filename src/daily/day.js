@@ -3,7 +3,7 @@ import { CHALLENGES, BY_ID } from './challenges.js';
 import { makeRng, genStage, stageScore } from './engine.js';
 
 /** The link people share. Set to the published page. */
-export const SHARE_URL = '';
+export const SHARE_URL = 'https://claude.ai/artifact/TnUCvveikwSKjWDeGjRMQ4';
 
 export const STAGES = 5;
 export const DAY_ONE = Date.UTC(2026, 10, 18);   // day #1 = 2026-11-18 (local date)

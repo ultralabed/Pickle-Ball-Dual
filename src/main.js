@@ -567,3 +567,8 @@ startDemo();
 menus.show('main');
 document.body.classList.add('menu');
 requestAnimationFrame((t) => { last = t; frame(t); });
+
+// Installed app (Add to Home Screen): a service worker keeps the game playable offline. Only on the real https site.
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register(new URL('../sw.js', import.meta.url)).catch(() => {}); });
+}

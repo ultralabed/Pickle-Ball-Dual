@@ -15,7 +15,7 @@ const js = execFileSync('npx', ['--yes', 'esbuild@0.24.0', 'src/daily/main.js', 
 const css = `${fs.readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')}\n${fs.readFileSync(path.join(ROOT, 'src/daily/daily.css'), 'utf8')}`;
 // a closing script tag inside the bundled code would end the inline script early
 const safeJs = js.split('</script').join('<\\/script');
-const html = `<title>每日匹克球挑戰</title>
+const html = `<title>Daily Pickleball Challenge</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 ${css}

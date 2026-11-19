@@ -125,6 +125,49 @@ const en = await page.evaluate(() => document.querySelector('.dc-card-h b').text
 check(/[A-Za-z]/.test(en) && !/[一-鿿]/.test(en), `language toggle: challenge name is "${en}"`);
 await page.evaluate(() => window.__daily.openList()); await page.waitForTimeout(300);
 await shot('list-en');
+// ---- 4. English first: a non-Chinese browser gets English everywhere, with no Chinese text left over
+{
+  const ctxEn = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'en-US', hasTouch: true, isMobile: true });
+  const pe = await ctxEn.newPage();
+  pe.on('console', (m) => { const t = m.text(); if ((m.type() === 'error' || m.type() === 'warning') && !/GPU stall|ReadPixels|swiftshader|Automatic fallback to software WebGL/i.test(t)) problems.push(`[en ${m.type()}] ${t}`); });
+  pe.on('pageerror', (e) => problems.push(`[en pageerror] ${e.message}`));
+  const rdy = () => pe.waitForFunction(() => window.__daily && window.__daily.cur, null, { timeout: 30000 });
+  // all visible text except the language button (it shows the other language's name on purpose)
+  const cjk = () => pe.evaluate(() => { const c = document.body.cloneNode(true); c.querySelectorAll('[aria-label="Language"], script, style, noscript').forEach((e) => e.remove()); const labels = [...document.querySelectorAll('[aria-label]')].map((e) => e.getAttribute('aria-label')).join(' '); return ((c.textContent + ' ' + labels + ' ' + document.title).match(/[\u3400-\u9fff]+/g) || []).join(','); });
+  await pe.goto(base, { waitUntil: 'load' }); await rdy();
+  const title0 = await pe.title();
+  check(title0 === 'Daily Pickleball Challenge', `English browser: tab title is "${title0}"`);
+  check(await pe.locator('[data-sheet="help"]').count() === 1 && (await cjk()) === '', `English browser: first-visit how-to is English (Chinese found: "${await cjk()}")`);
+  check(await pe.evaluate(() => document.documentElement.lang) === 'en', 'English browser: <html lang> is en');
+  await pe.locator('#dc-help-go').click();
+  const bad = [];
+  for (const id of listIds) {
+    await pe.goto(`${base}${sep}practice=${id}&seed=en1`, { waitUntil: 'load' }); await rdy(); await pe.waitForTimeout(250);
+    const c = await cjk(); if (c) bad.push(`${id}: ${c}`);
+    // a weak ball, to see the result toast too
+    await pe.mouse.move(195, 430); await pe.mouse.down(); await pe.mouse.move(195, 480, { steps: 3 }); await pe.mouse.up(); await pe.waitForTimeout(350);
+    const c2 = await cjk(); if (c2) bad.push(`${id} after a ball: ${c2}`);
+  }
+  check(bad.length === 0, `English mode: no Chinese text on any of the 20 challenges${bad.length ? ` (${bad.join(' | ')})` : ''}`);
+  await pe.evaluate(() => window.__daily.openList()); await pe.waitForTimeout(200);
+  check((await cjk()) === '', `English mode: challenge list has no Chinese ("${await cjk()}")`);
+  // a finished day, to see the result screen and the share text
+  await pe.goto(base, { waitUntil: 'load' }); await rdy();
+  await pe.evaluate(() => { const d = window.__daily.day; localStorage.setItem(`pbd-daily.day.${d.key}`, JSON.stringify({ v: 1, stage: 4, done: true, shots: [[{ s: 100, k: 'in', x: 0, z: -3 }], [{ s: 70, k: 'in', x: 0, z: -3 }], [{ s: 0, k: 'net', x: 0, z: 0 }], [{ s: 40, k: 'in', x: 0, z: -3 }], [{ s: 95, k: 'in', x: 0, z: -3 }]] })); localStorage.setItem('pbd-daily.stats', JSON.stringify({ streak: 3, last: d.n, best: 305, played: 3 })); });
+  await pe.reload({ waitUntil: 'load' }); await rdy(); await pe.waitForSelector('[data-sheet="result"]');
+  const shareEn = await pe.locator('#dc-share').inputValue();
+  console.log(shareEn.split('\n').map((l) => `     | ${l}`).join('\n'));
+  check((await cjk()) === '' && !/[\u3400-\u9fff]/.test(shareEn) && /^Daily Pickleball #\d+ {2}305\/500/.test(shareEn), `English mode: result screen and share text are English ("${await cjk()}")`);
+  if (shots) await pe.screenshot({ path: `${shots}/en-result.png` });
+  // the choice is remembered: switch to Chinese, reload, still Chinese; and a Chinese browser still starts in Chinese
+  await pe.evaluate(() => document.querySelector('[aria-label="Language"]').click()); await pe.reload({ waitUntil: 'load' }); await rdy();
+  check(/[\u4e00-\u9fff]/.test(await pe.evaluate(() => document.querySelector('.dc-card-h b').textContent)), 'language choice is remembered after a reload');
+  await ctxEn.close();
+  const ctxFr = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' });
+  const pf = await ctxFr.newPage(); await pf.goto(base, { waitUntil: 'load' }); await pf.waitForFunction(() => window.__daily && window.__daily.cur);
+  check(await pf.locator('.dc-how li').first().textContent().then((x) => /^Five pickleball/.test(x)), 'a French browser gets English');
+  await ctxFr.close();
+}
 check(problems.length === 0, `no console errors or failed requests (${problems.length})`);
 for (const p of problems.slice(0, 12)) console.log('    ', p);
 await browser.close(); srv.close();
